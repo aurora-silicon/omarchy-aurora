@@ -13,3 +13,9 @@ Package validation runs the complete `omarchy-mac` unit suite and the runtime in
 Development is in progress. Published downloads and exact validation evidence will be linked here once the first complete delivery passes.
 
 Snapshots can be created with Snapper. Omarchy's Limine snapshot restore and factory reset are unavailable with Aurora boot; use Aurora recovery or the macOS installer for recovery and reinstalling.
+
+To rebuild a pinned release, run `gh workflow run packages.yml --repo aurora-silicon/omarchy-aurora --ref main`. CI builds and tests the packages, signs an immutable snapshot, deploys the package feed, then builds and VM-tests the image before publishing its signed installer payload.
+
+For an image-only change, run `gh workflow run images.yml --repo aurora-silicon/omarchy-aurora --ref main -f overlay-snapshot=testing-YYYYMMDD.N` with a signed snapshot matching the source lock. A successful image run can also be published explicitly with `publish-payload.yml -f image-run=RUN_ID`; the shared workflow authenticates its artifacts and VM results again.
+
+When updating the ALARM base, keep `sources.json`, the locked snapshot manifest and its signed-database package versions aligned. Runtime or Mac package updates also update the matching recipe versions. No local kernel or desktop compilation is required to install an image.

@@ -16,7 +16,7 @@ permissions:
 jobs:
   delivery:
     if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
-    uses: aurora-silicon/aurora-distributions/.github/workflows/build-payload.yml@1d5da4a90ebde5cdcb5ed7dc29e8509cc4bb1d39
+    uses: aurora-silicon/aurora-distributions/.github/workflows/build-payload.yml@10345c031bae2ecf12169e65d41d155b969de8fd
     with:
       profile: omarchy-hyprland
       image-run: ${{ inputs.image-run || format('{0}', github.event.workflow_run.id) }}
