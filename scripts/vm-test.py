@@ -258,7 +258,8 @@ def validate(image, work, report_path):
                '-device', 'virtio-blk-pci,drive=os,logical_block_size=4096,physical_block_size=4096',
                '-device', 'virtio-net-pci,netdev=net', '-netdev', 'user,id=net',
                '-device', 'virtio-gpu-pci,xres=1280,yres=800', '-display', 'none',
-               '-serial', 'stdio', '-monitor', 'none', '-no-reboot']
+               '-chardev', 'stdio,id=console,signal=off', '-serial', 'chardev:console',
+               '-monitor', 'none', '-no-reboot']
     dtb = work / 'machine.dtb'
     dump = command.copy()
     dump[dump.index('virt,gic-version=3')] += ',dumpdtb=' + str(dtb)
