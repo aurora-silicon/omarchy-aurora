@@ -8,6 +8,7 @@ import sys
 def check(root):
     for name in ['usr/bin/Hyprland', 'usr/bin/quickshell', 'usr/bin/foot',
                  'usr/bin/omarchy', 'usr/bin/omarchy-provision-user',
+                 'usr/share/pacman/keyrings/omarchy.gpg',
                  'usr/share/omarchy-aurora/sources.lock.json',
                  'usr/lib/omarchy/aurora-boot/setup-boot']:
         if not (root / name).exists():
@@ -26,7 +27,7 @@ def check(root):
     if not any((root / 'etc/skel/.config/hypr' / name).exists()
                for name in ['hyprland.conf', 'hyprland.lua']):
         raise ValueError('Omarchy desktop defaults missing from skel')
-    for name in ['omarchy-aurora-hardware.service', 'omarchy-aurora-owners.service']:
+    for name in ['omarchy-aurora-keyring.service', 'omarchy-aurora-hardware.service', 'omarchy-aurora-owners.service']:
         if not (root / 'etc/systemd/system/multi-user.target.wants' / name).is_symlink():
             raise ValueError('first-boot desktop integration not enabled: ' + name)
     lock = json.loads((root / 'usr/share/omarchy-aurora/sources.lock.json').read_text())

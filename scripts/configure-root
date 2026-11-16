@@ -3,7 +3,7 @@ set -euo pipefail
 root=${1:?mounted image root required}
 root=$(realpath -- "$root")
 [[ $(id -u) == 0 && $root == /* && $root != / && -r $root/usr/share/omarchy/version ]]
-chroot "$root" systemctl enable sddm.service omarchy-aurora-hardware.service omarchy-aurora-owners.service
+chroot "$root" systemctl enable sddm.service omarchy-aurora-keyring.service omarchy-aurora-hardware.service omarchy-aurora-owners.service
 chroot "$root" systemctl set-default graphical.target
 # Aurora's wizard precedes the display manager and creates the real owner.
 rm -f "$root/etc/aurora/desktop-account-setup"

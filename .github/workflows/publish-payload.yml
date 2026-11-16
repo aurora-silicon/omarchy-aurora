@@ -14,8 +14,32 @@ permissions:
   id-token: write
   attestations: write
 jobs:
-  delivery:
+  qualification:
     if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - name: Require real first-boot package trust
+        env:
+          GH_TOKEN: ${{ github.token }}
+          IMAGE_RUN: ${{ inputs.image-run || format('{0}', github.event.workflow_run.id) }}
+        run: |
+          set -euo pipefail
+          [[ $IMAGE_RUN =~ ^[0-9]+$ ]]
+          artifact=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$IMAGE_RUN/artifacts" \
+            --jq '.artifacts[] | select(.name == "omarchy-hyprland-candidate" and .expired == false) | .id')
+          [[ $artifact =~ ^[0-9]+$ ]]
+          python3 scripts/artifact-entry.py --artifact "$artifact" --entry out/vm-result.json \
+            --output "$RUNNER_TEMP/package-trust-vm.json"
+          python3 - "$RUNNER_TEMP/package-trust-vm.json" <<'PY'
+          import json, sys
+          result = json.load(open(sys.argv[1]))
+          assert result.get('package_trust') is True, 'VM did not prove first-boot package trust'
+          PY
+  delivery:
+    needs: qualification
     uses: aurora-silicon/aurora-distributions/.github/workflows/build-payload.yml@e2d34963b1ad1f0ce5c2599a28c0c6018391b5a4
     with:
       profile: omarchy-hyprland

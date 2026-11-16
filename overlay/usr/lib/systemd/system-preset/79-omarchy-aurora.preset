@@ -1,4 +1,5 @@
 enable sddm.service
+enable omarchy-aurora-keyring.service
 enable omarchy-aurora-hardware.service
 enable omarchy-aurora-owners.service
 disable omarchy-firstboot.service

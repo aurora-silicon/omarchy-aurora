@@ -1,6 +1,6 @@
 pkgname=omarchy-aurora
 pkgver=4.5.0
-pkgrel=1
+pkgrel=2
 pkgdesc='Omarchy desktop integration for the shared Aurora ALARM image'
 arch=('aarch64')
 license=('MIT')

@@ -1,0 +1,15 @@
+[Unit]
+Description=Trust the packaged Omarchy release key on this Mac
+Requires=aurora-alarm-keyring.service
+After=aurora-alarm-keyring.service
+Before=aurora-firstboot.service omarchy-aurora-hardware.service omarchy-aurora-owners.service
+ConditionPathExists=!/var/lib/aurora/omarchy-keyring-ready
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/pacman-key --populate omarchy
+ExecStartPost=/usr/bin/touch /var/lib/aurora/omarchy-keyring-ready
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

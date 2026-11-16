@@ -232,6 +232,10 @@ def prepare(image, work):
             resolver.symlink_to(original_resolver[1])
         else:
             resolver.write_bytes(original_resolver[1])
+        # Kernel authentication needs a temporary builder keyring. The real
+        # guest must recreate trust on first boot just like the release image.
+        run('python3', ROOT / 'scripts/stop-image-key-agents.py', root)
+        shutil.rmtree(root / 'etc/pacman.d/gnupg')
     finally:
         if mounts:
             run('python3', ROOT / 'scripts/stop-image-key-agents.py', root)
@@ -334,6 +338,9 @@ def validate(image, work, report_path):
         result['owner'] = True
         guest('test "$(id -u)" = 0 && visudo -cf /etc/sudoers.d/10-aurora-owner', sudo=True)
         result['sudo'] = True
+        guest('test -f /var/lib/aurora/omarchy-keyring-ready && '
+              'pacman-key --list-keys 40DFB630FF42BCFFB047046CF0134EE680CAC571 >/dev/null', sudo=True)
+        result['package_trust'] = True
         guest("grep -qx 'phase=finished' /boot/omarchy/encrypt.state && "
               "test -f /var/lib/aurora/firstboot/disk-rekeyed && "
               "test ! -e /var/lib/aurora/firstboot/pending && "

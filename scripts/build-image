@@ -24,7 +24,7 @@ python3 - <<'PY'
 import json
 from pathlib import Path
 r=json.loads(Path('out/vm-result.json').read_text())
-required=('boot','encryption','temporary_key_rejected','owner','sudo','second_boot','desktop','shell','terminal','network','original_unchanged')
+required=('boot','encryption','temporary_key_rejected','owner','sudo','package_trust','second_boot','desktop','shell','terminal','network','original_unchanged')
 assert all(r.get(k) is True for k in required),r
 print('Passing VM candidate ready for authenticated payload assembly')
 PY
