@@ -23,10 +23,14 @@ cleanup() {
 }
 trap cleanup EXIT
 bsdtar --exclude='dev/*' -xpf inputs/alarm/cache/base/ArchLinuxARM-aarch64.tar.gz -C "$stage"
+# Pacman downloads as its unprivileged alpm user inside this root.
+chmod 0755 "$stage"
 mkdir -p "$stage"/{dev,proc,sys,run,build,output}
 mount --rbind /dev "$stage/dev"
+mount --make-rslave "$stage/dev"
 mount -t proc proc "$stage/proc"
 mount --rbind /sys "$stage/sys"
+mount --make-rslave "$stage/sys"
 mount -t tmpfs tmpfs "$stage/run"
 rm -f -- "$stage/etc/resolv.conf"
 cp -L /etc/resolv.conf "$stage/etc/resolv.conf"
