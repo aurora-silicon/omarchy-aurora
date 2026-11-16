@@ -10,12 +10,12 @@ on:
     types: [completed]
 permissions:
   contents: read
-concurrency:
-  group: omarchy-image-${{ github.ref }}
-  cancel-in-progress: false
 jobs:
   image:
     if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+    concurrency:
+      group: omarchy-image-job-${{ github.ref }}
+      cancel-in-progress: false
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 180
     permissions:
