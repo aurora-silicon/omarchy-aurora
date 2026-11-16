@@ -37,6 +37,10 @@ def completion_pattern(nonce):
     return re.compile(r'VM_' + re.escape(nonce) + r':([0-9]+)\r*\n')
 
 
+def unlock_prompt_pattern():
+    return re.compile(r'(?i)(?:Unlock Aurora root:|(?:passphrase|password)[^\r\n]*:)')
+
+
 def partitions(image):
     with image.open('rb') as stream:
         stream.seek(4096)
@@ -350,9 +354,9 @@ def validate(image, work, report_path):
         child.close()
         print('VM: second boot, incorrect disk password rejection, owner unlock/login', flush=True)
         child = start()
-        child.expect(r'(?i)(passphrase|password).*:', timeout=900)
+        child.expect(unlock_prompt_pattern(), timeout=900)
         child.sendline('definitely-not-the-owner-password')
-        child.expect(r'(?i)(passphrase|password).*:', timeout=120)
+        child.expect(unlock_prompt_pattern(), timeout=120)
         child.sendline(password)
         login()
         guest_ready = True

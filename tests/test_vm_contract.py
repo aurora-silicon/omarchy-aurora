@@ -13,6 +13,14 @@ spec.loader.exec_module(vm)
 
 
 class VMContract(unittest.TestCase):
+    def test_unlock_prompt_matches_the_real_aurora_prompt_after_reboot(self):
+        pattern = vm.unlock_prompt_pattern()
+        captured = '\x1b[0;1;39mUnlock Aurora root: (press TAB for no echo) \x1b[0m'
+        self.assertEqual(pattern.search(captured).group(), 'Unlock Aurora root:')
+        self.assertIsNotNone(pattern.search('Please enter passphrase for disk root:'))
+        self.assertIsNotNone(pattern.search('Password for encrypted root:'))
+        self.assertIsNone(pattern.search('omarchy-vm login:'))
+
     def test_serial_completion_accepts_uart_and_pty_line_endings(self):
         nonce = '28db08f0d3321540001b'
         pattern = vm.completion_pattern(nonce)
