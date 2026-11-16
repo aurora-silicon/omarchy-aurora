@@ -7,6 +7,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 ALIASES = {
+    'nvim': 'neovim', 'dotnet-runtime': 'dotnet-runtime-bin',
     'linux': 'linux-aurora', 'linux-aarch64': 'linux-aurora', 'linux-asahi': 'linux-aurora',
     'linux-headers': 'linux-aurora-headers', 'linux-asahi-headers': 'linux-aurora-headers',
     'm1n1': 'aura', 'm1n1-aurora': 'aura', 'uboot-asahi': 'uboot-aurora',
