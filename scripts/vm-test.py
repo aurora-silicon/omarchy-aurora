@@ -234,6 +234,7 @@ def validate(image, work, report_path):
                 '-qmp', 'unix:' + str(qmp_path) + ',server=on,wait=off']
     password = 'Vm-' + secrets.token_hex(12)
     child = None
+    guest_ready = False
     log = (work / 'serial.log').open('w')
 
     def start():
@@ -282,6 +283,7 @@ def validate(image, work, report_path):
         child.sendline(password)
         child.expect('Aurora setup is complete', timeout=1800)
         login()
+        guest_ready = True
         root_device = '/dev/disk/by-partuuid/' + rows[2]['uuid']
         guest("test \"$(id -u)\" -ge 1000 && id -nG | tr ' ' '\\n' | grep -qx wheel")
         result['owner'] = True
@@ -300,6 +302,7 @@ def validate(image, work, report_path):
               'trap \'rm -f /run/aurora-vm-temporary.key\' EXIT; set +e; cryptsetup open --test-passphrase --key-file /run/aurora-vm-temporary.key ' + root_device +
               ' >/dev/null 2>&1; status=$?; set -e; test \"$status\" -eq 2', sudo=True)
         result['temporary_key_rejected'] = True
+        guest_ready = False
         child.sendline("sudo -k; sudo -S -p 'VM_AUTH> ' systemctl reboot")
         child.expect('VM_AUTH> ')
         child.sendline(password)
@@ -312,6 +315,7 @@ def validate(image, work, report_path):
         child.expect(r'(?i)(passphrase|password).*:', timeout=120)
         child.sendline(password)
         login()
+        guest_ready = True
         result['second_boot'] = True
         guest('systemctl is-active --quiet NetworkManager && ip -4 route show default | grep -q default && ping -c1 -W3 10.0.2.2')
         result['network'] = True
@@ -330,6 +334,20 @@ def validate(image, work, report_path):
         result['original_unchanged'] = digest(image) == before
         if not result['original_unchanged']:
             raise RuntimeError('VM mutated the release image')
+    except Exception as error:
+        result['failure'] = str(error)
+        if guest_ready and child is not None and child.isalive():
+            try:
+                child.sendcontrol('c')
+                guest('journalctl -b --no-pager -n 200; '
+                      'journalctl -b --no-pager _UID=$(id -u auroravm) -n 150; '
+                      'for log in /run/user/1000/hypr/*/hyprland.log '
+                      '/home/auroravm/.cache/hyprland/*.txt; do '
+                      'if test -f "$log"; then tail -n 100 "$log"; fi; done; true',
+                      sudo=True, timeout=45)
+            except Exception:
+                print('VM guest diagnostics unavailable; retaining serial output and failure report', flush=True)
+        raise
     finally:
         if child is not None and child.isalive():
             child.terminate(force=True)
