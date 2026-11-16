@@ -45,7 +45,9 @@ cp -a overlay packages sources.lock.json LICENSE "$stage/build/aurora/"
 builder_uid=$(chroot "$stage" id -u builder)
 builder_gid=$(chroot "$stage" id -g builder)
 chown -R "$builder_uid:$builder_gid" "$stage/build" "$stage/output"
-chroot "$stage" runuser -u builder -- env OMARCHY_TEST_RUNTIME=/build/runtime \
+# Fedora exports container=oci; upstream fixtures use that name for their
+# synthetic iBoot container path. Do not inject the host value into the suite.
+chroot "$stage" runuser -u builder -- env -u container OMARCHY_TEST_RUNTIME=/build/runtime \
   bash -euo pipefail -c 'cd /build/mac; omarchy-mac/test/all; test/integration/all'
 python3 scripts/prepare-runtime.py "$stage/build/runtime"
 mkdir -p out/packages
