@@ -42,7 +42,7 @@ cp -L /etc/resolv.conf "$stage/etc/resolv.conf"
 chroot "$stage" pacman-key --init
 chroot "$stage" pacman-key --populate archlinuxarm
 chroot "$stage" pacman -Syu --noconfirm --needed base-devel git imagemagick python systemd jq \
-  lua python-yaml nodejs npm ripgrep shellcheck ffmpeg kitty gum plocate openssh unzip bc \
+  lua python-yaml nodejs npm ripgrep ffmpeg kitty gum plocate openssh unzip bc \
   libarchive libxkbcommon desktop-file-utils glib2 sqlite dtc
 sed -i 's/^#\(en_US\.UTF-8 UTF-8\)/\1/' "$stage/etc/locale.gen"
 chroot "$stage" locale-gen
