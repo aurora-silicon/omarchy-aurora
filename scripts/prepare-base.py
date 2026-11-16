@@ -28,7 +28,7 @@ def extend(text):
 
 def prepare(base):
     lock = json.loads((ROOT / 'sources.lock.json').read_text())
-    revision = subprocess.check_output(['git', '-C', str(base), 'rev-parse', 'HEAD'], text=True).strip()
+    revision = subprocess.check_output(['git', '-c', 'safe.directory=' + str(base.resolve()), '-C', str(base), 'rev-parse', 'HEAD'], text=True).strip()
     if revision != lock['alarm']['commit']:
         raise ValueError('ALARM builder source is not the pinned revision')
     path = base / 'scripts/build-image'

@@ -17,7 +17,7 @@ def replace(path, old, new):
 
 def prepare(runtime):
     lock = json.loads((ROOT / 'sources.lock.json').read_text())
-    revision = subprocess.check_output(['git', '-C', str(runtime), 'rev-parse', 'HEAD'], text=True).strip()
+    revision = subprocess.check_output(['git', '-c', 'safe.directory=' + str(runtime.resolve()), '-C', str(runtime), 'rev-parse', 'HEAD'], text=True).strip()
     if revision != lock['omarchy']['commit']:
         raise ValueError('runtime is not the pinned Omarchy source')
     replace(runtime / 'install/helpers/pacman.sh',
