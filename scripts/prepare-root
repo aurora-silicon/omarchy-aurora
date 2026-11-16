@@ -42,6 +42,13 @@ chroot "$root" pacman -S --noconfirm --needed omarchy-aurora/omarchy omarchy-aur
 chroot "$root" bash -c 'OMARCHY_PATH=/usr/share/omarchy omarchy-pkg-defaults aarch64-apple' > /src/out/omarchy-defaults.txt
 python3 /src/scripts/select-desktop-packages.py "$root" /src/out/omarchy-defaults.txt /src/out/desktop-package-plan.json
 mapfile -t desktop_packages < <(python3 -c 'import json; print("\n".join(json.load(open("/src/out/desktop-package-plan.json"))["install"]))')
+# The ALARM bootstrap includes compatibility wrappers for vi/ex. Replace
+# those wrappers with the real editor requested by Omarchy's default set.
+if printf '%s\n' "${desktop_packages[@]}" | grep -Fxq vi; then
+  if chroot "$root" pacman -Qq ex-vi-compat >/dev/null 2>&1; then
+    chroot "$root" pacman -R --noconfirm ex-vi-compat
+  fi
+fi
 chroot "$root" pacman -S --noconfirm --needed "${desktop_packages[@]}" snapper foot
 # Pin build-time setup to the same immutable package sources.
 python3 - "$root" <<'PYTEMPLATES'
