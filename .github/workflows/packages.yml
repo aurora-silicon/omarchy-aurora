@@ -2,7 +2,7 @@ name: Omarchy Aurora packages
 on:
   push:
     branches: [main]
-    paths: [packages/**, overlay/**, scripts/build-packages, scripts/fetch-inputs.py, scripts/prepare-runtime.py, scripts/check-packages.py, scripts/sign-repository.py, tests/**, sources.lock.json, sources/**, .github/workflows/packages.yml]
+    paths: [packages/**, overlay/**, scripts/build-packages, scripts/fetch-inputs.py, scripts/prepare-runtime.py, scripts/check-packages.py, scripts/sign-repository.py, scripts/compatibility.py, tests/**, sources.lock.json, sources/**, .github/workflows/packages.yml]
   pull_request:
   workflow_dispatch:
 permissions:

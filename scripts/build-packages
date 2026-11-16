@@ -54,6 +54,10 @@ cp -a overlay packages sources.lock.json LICENSE "$stage/build/aurora/"
 builder_uid=$(chroot "$stage" id -u builder)
 builder_gid=$(chroot "$stage" id -g builder)
 chown -R "$builder_uid:$builder_gid" "$stage/build" "$stage/output"
+for name in omarchy-settings omarchy omarchy-mac omarchy-aurora; do
+  chroot "$stage" runuser -u builder -- bash -euo pipefail -c \
+    'cd "/build/aurora/packages/$1"; makepkg --printsrcinfo >/dev/null' metadata "$name"
+done
 # Fedora exports container=oci; upstream fixtures use that name for their
 # synthetic iBoot container path. Do not inject the host value into the suite.
 chroot "$stage" runuser -u builder -- env -u container OMARCHY_TEST_RUNTIME=/build/runtime \

@@ -1,6 +1,6 @@
 pkgname=omarchy-mac
 pkgver=0.2.6
-pkgrel=1.aurora1
+pkgrel=1.1
 pkgdesc='Current Omarchy Mac support on the Aurora hardware stack'
 arch=('aarch64')
 license=('MIT')
