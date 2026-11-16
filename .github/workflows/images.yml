@@ -77,4 +77,6 @@ jobs:
             out/vm-result.json
             out/vm/serial.log
             out/vm/desktop.png
+            out/vm/failure.png
+            out/vm/failure-qmp.json
           retention-days: 14

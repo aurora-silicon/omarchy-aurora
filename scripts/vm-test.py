@@ -294,6 +294,7 @@ def validate(image, work, report_path):
 
     def guest(code, sudo=False, timeout=120):
         import shlex
+        print('VM guest: ' + code.splitlines()[0][:160], flush=True)
         nonce = secrets.token_hex(10)
         command_text = code
         if sudo:
@@ -301,7 +302,7 @@ def validate(image, work, report_path):
             command_text = "sudo -S -p 'VM_AUTH> ' sh -c " + shlex.quote(code)
         child.sendline(command_text + "; printf '\\nVM_%s:%s\\n' '" + nonce + "' \"$?\"")
         if sudo:
-            child.expect('VM_AUTH> ')
+            child.expect('VM_AUTH> ', timeout=min(timeout, 45))
             child.sendline(password)
         child.expect(completion_pattern(nonce), timeout=timeout)
         if child.match.group(1) != '0':
@@ -372,11 +373,15 @@ def validate(image, work, report_path):
         guest('systemctl is-active --quiet NetworkManager && ip -4 route show default | grep -q default && ping -c1 -W3 10.0.2.2')
         result['network'] = True
         print('VM: actual Hyprland, Omarchy shell and terminal', flush=True)
-        guest('systemctl start graphical.target', sudo=True, timeout=240)
+        # Wait on compositor readiness below, rather than holding the serial
+        # sudo session open for the complete graphical target transaction.
+        guest('systemctl --no-block start graphical.target', sudo=True, timeout=60)
         guest("for n in $(seq 1 60); do pgrep -u $(id -u) -x Hyprland >/dev/null && break; sleep 2; done; pgrep -u $(id -u) -x Hyprland", timeout=180)
         guest('python3 /usr/lib/aurora-vm-desktop-ready && '
               'command hyprctl -i 0 -j monitors | python3 -c \'import json,sys;assert any(m["width"]>0 and m["height"]>0 for m in json.load(sys.stdin))\'',
               timeout=360)
+        guest('systemctl is-active --quiet graphical.target && '
+              'systemctl is-active --quiet display-manager.service')
         result['desktop'] = True
         guest('for n in $(seq 1 60); do (pgrep -u $(id -u) -x quickshell || pgrep -u $(id -u) -x qs) && break; sleep 2; done; pgrep -u $(id -u) -x quickshell || pgrep -u $(id -u) -x qs', timeout=180)
         result['shell'] = True
@@ -390,10 +395,22 @@ def validate(image, work, report_path):
             raise RuntimeError('VM mutated the release image')
     except Exception as error:
         result['failure'] = str(error)
+        if child is not None and child.isalive():
+            try:
+                (work / 'failure-qmp.json').write_text(json.dumps(qmp(qmp_path, 'query-status'), indent=2) + '\n')
+                qmp(qmp_path, 'screendump', {'filename': str(work / 'failure.ppm')})
+                subprocess.run(['convert', str(work / 'failure.ppm'), str(work / 'failure.png')],
+                               check=True, timeout=20)
+            except Exception as diagnostic_error:
+                print('VM failure screenshot unavailable: ' + str(diagnostic_error), flush=True)
         if guest_ready and child is not None and child.isalive():
             try:
                 child.sendcontrol('c')
-                guest('journalctl -b --no-pager -n 200; '
+                guest('systemctl list-jobs --no-pager; '
+                      'systemctl status graphical.target display-manager.service '
+                      'aurora-firstboot.service omarchy-aurora-keyring.service '
+                      'omarchy-aurora-hardware.service omarchy-aurora-owners.service --no-pager; '
+                      'journalctl -b --no-pager -n 200; '
                       'journalctl -b --no-pager _UID=$(id -u auroravm) -n 150; '
                       'for log in /run/user/1000/hypr/*/hyprland.log '
                       '/home/auroravm/.cache/hyprland/*.txt; do '
