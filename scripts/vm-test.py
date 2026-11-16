@@ -32,6 +32,11 @@ def digest(path):
         return hashlib.file_digest(stream, 'sha256').hexdigest()
 
 
+def completion_pattern(nonce):
+    # A guest UART and its host PTY can both translate LF to CRLF.
+    return re.compile(r'VM_' + re.escape(nonce) + r':([0-9]+)\r*\n')
+
+
 def partitions(image):
     with image.open('rb') as stream:
         stream.seek(4096)
@@ -288,7 +293,7 @@ def validate(image, work, report_path):
         if sudo:
             child.expect('VM_AUTH> ')
             child.sendline(password)
-        child.expect(r'VM_' + nonce + r':([0-9]+)\r?\n', timeout=timeout)
+        child.expect(completion_pattern(nonce), timeout=timeout)
         if child.match.group(1) != '0':
             raise RuntimeError('guest assertion failed: ' + code.splitlines()[0])
 

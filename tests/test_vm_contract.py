@@ -13,6 +13,14 @@ spec.loader.exec_module(vm)
 
 
 class VMContract(unittest.TestCase):
+    def test_serial_completion_accepts_uart_and_pty_line_endings(self):
+        nonce = '28db08f0d3321540001b'
+        pattern = vm.completion_pattern(nonce)
+        for ending in ('\n', '\r\n', '\r\r\n'):
+            self.assertEqual(pattern.search('VM_' + nonce + ':0' + ending).group(1), '0')
+        self.assertEqual(pattern.search('VM_' + nonce + ':7\r\r\n').group(1), '7')
+        self.assertIsNone(pattern.search("printf '\\nVM_%s:%s\\n' '" + nonce + "' \"$?\""))
+
     def image(self, path, outside=False):
         entries = bytearray(128 * 128)
         ids = []
