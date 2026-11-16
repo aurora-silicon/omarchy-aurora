@@ -226,6 +226,7 @@ def prepare(image, work):
         write(root, 'etc/sddm.conf.d/99-vm-autologin.conf',
               '[Autologin]\nUser=auroravm\nSession=' + session + '\nRelogin=false\n')
         write(root, 'boot/efi/omarchy/install.conf', 'format=1\nencrypt=1\n')
+        shutil.copyfile(ROOT / 'scripts/vm-desktop-ready.py', root / 'usr/lib/aurora-vm-desktop-ready')
         resolver.unlink(missing_ok=True)
         if original_resolver[0] == 'link':
             resolver.symlink_to(original_resolver[1])
@@ -366,7 +367,10 @@ def validate(image, work, report_path):
         print('VM: actual Hyprland, Omarchy shell and terminal', flush=True)
         guest('systemctl start graphical.target', sudo=True, timeout=240)
         guest("for n in $(seq 1 60); do pgrep -u $(id -u) -x Hyprland >/dev/null && break; sleep 2; done; pgrep -u $(id -u) -x Hyprland", timeout=180)
-        guest("export HYPRLAND_INSTANCE_SIGNATURE=$(hyprctl -j instances | python3 -c 'import json,sys;print(json.load(sys.stdin)[0][\"instance\"])'); hyprctl -j monitors | python3 -c 'import json,sys;assert any(m[\"width\"]>0 and m[\"height\"]>0 for m in json.load(sys.stdin))'")
+        guest('export HYPRLAND_INSTANCE_SIGNATURE=$(python3 /usr/lib/aurora-vm-desktop-ready); '
+              'test -n "$HYPRLAND_INSTANCE_SIGNATURE" && '
+              'hyprctl -j monitors | python3 -c \'import json,sys;assert any(m["width"]>0 and m["height"]>0 for m in json.load(sys.stdin))\'',
+              timeout=360)
         result['desktop'] = True
         guest('for n in $(seq 1 60); do (pgrep -u $(id -u) -x quickshell || pgrep -u $(id -u) -x qs) && break; sleep 2; done; pgrep -u $(id -u) -x quickshell || pgrep -u $(id -u) -x qs', timeout=180)
         result['shell'] = True
