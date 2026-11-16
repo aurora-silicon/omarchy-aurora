@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -39,8 +40,13 @@ def prepare(base):
     path = base / 'scripts/build-image'
     original = path.read_bytes()
     path.write_text(extend(original.decode()))
+    agent_helper = base / 'scripts/stop-image-key-agents.py'
+    agent_original = hashlib.sha256(agent_helper.read_bytes()).hexdigest()
+    shutil.copyfile(ROOT / 'scripts/stop-image-key-agents.py', agent_helper)
     (base / 'omarchy-extension.json').write_text(json.dumps({
         'alarm_source': revision, 'producer_sha256': hashlib.sha256(original).hexdigest(),
+        'original_agent_helper_sha256': agent_original,
+        'agent_helper_sha256': hashlib.sha256(agent_helper.read_bytes()).hexdigest(),
         'profile': lock['profile'], 'snapshot': lock['alarm']['snapshot']}, indent=2) + '\n')
 
 

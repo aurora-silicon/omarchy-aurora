@@ -13,7 +13,7 @@ stage=$(mktemp -d /var/tmp/omarchy-package-root.XXXXXX)
 cleanup() {
   local status=$?
   local clean=1
-  python3 inputs/alarm/scripts/stop-image-key-agents.py "$stage" || status=1
+  python3 scripts/stop-image-key-agents.py "$stage" || status=1
   for path in run sys proc dev ''; do
     if mountpoint -q "$stage${path:+/$path}"; then umount -R "$stage${path:+/$path}" || clean=0; fi
   done
