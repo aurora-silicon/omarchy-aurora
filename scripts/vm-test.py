@@ -155,7 +155,7 @@ def prepare(image, work):
         resolver.unlink(missing_ok=True)
         shutil.copyfile('/etc/resolv.conf', resolver)
         run('chroot', root, 'pacman-key', '--init')
-        run('chroot', root, 'pacman-key', '--populate', 'archlinuxarm')
+        run('chroot', root, 'pacman-key', '--populate')
         run('chroot', root, 'pacman', '-Swdd', '--noconfirm', 'core/linux-aarch64')
         archives = [p for p in (root / 'var/cache/pacman/pkg').glob('linux-aarch64-*.pkg.tar.*')
                     if not p.name.endswith('.sig')]
