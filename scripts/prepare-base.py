@@ -23,6 +23,11 @@ def extend(text):
         raise ValueError('ALARM desktop boundary changed')
     text = text.replace(anchor,
                         'bash /src/scripts/configure-root "$mountroot"\n' + anchor, 1)
+    anchor = 'tar --sparse -C "$root/out/$profile-installer" -cf - . | zstd'
+    if text.count(anchor) != 1:
+        raise ValueError('ALARM finalized archive boundary changed')
+    text = text.replace(anchor,
+        'python3 /src/scripts/finalize-bundle.py "$root/out/$profile-installer"\n' + anchor, 1)
     return text
 
 

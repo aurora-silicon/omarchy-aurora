@@ -23,6 +23,7 @@ def main():
     parser.add_argument('--packages', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--credentials-stdin', action='store_true')
+    parser.add_argument('--validation', type=Path, required=True)
     parser.add_argument('--dry-run-public-key', type=Path,
                         help='sign with a throwaway key whose public half is given here (dry runs only)')
     args = parser.parse_args()
@@ -31,6 +32,9 @@ def main():
     packages = sorted(args.packages.glob('*.pkg.tar.*'))
     if not packages or any(p.is_symlink() or not re.fullmatch(r'[A-Za-z0-9_.+:~-]+\.pkg\.tar\.(xz|zst|gz)', p.name) for p in packages):
         parser.error('expected regular versioned package archives')
+    validation = json.loads(args.validation.read_text())
+    if not (validation.get('mac_unit_suite') is True and validation.get('mac_integration_suite') is True):
+        raise ValueError('desktop package set has no passing compatibility suites')
     credentials = json.load(sys.stdin) if args.credentials_stdin else {
         'key': os.environ['ALARM_SIGNING_KEY'],
         'passphrase': os.environ['ALARM_SIGNING_PASSPHRASE'],
@@ -83,12 +87,14 @@ def main():
             alias.unlink(missing_ok=True)
             shutil.copyfile(target, alias)
             shutil.copyfile(str(target) + '.sig', str(alias) + '.sig')
+        (args.output / 'manifest.json').write_text(json.dumps({
+            'schema': 1, 'architecture': 'aarch64', 'channel': 'testing',
+            'signing_key': fingerprint, 'dry_run': bool(args.dry_run_public_key), 'packages': manifest, 'validation': validation,
+        }, indent=2) + '\n')
+        run(*gpg, '--local-user', fingerprint, '--detach-sign', '--output', str(args.output / 'manifest.json.sig'), str(args.output / 'manifest.json'))
+        run(*gpg, '--verify', str(args.output / 'manifest.json.sig'), str(args.output / 'manifest.json'))
         run('gpgconf', '--homedir', str(home), '--kill', 'gpg-agent')
     shutil.copyfile(public_key, args.output / 'aurora-alarm.asc')
-    (args.output / 'manifest.json').write_text(json.dumps({
-        'schema': 1, 'architecture': 'aarch64', 'channel': 'testing',
-        'signing_key': fingerprint, 'dry_run': bool(args.dry_run_public_key), 'packages': manifest,
-    }, indent=2) + '\n')
     print(f'Prepared and verified {len(manifest)} signed Omarchy Aurora packages and pacman databases')
 
 

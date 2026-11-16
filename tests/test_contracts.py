@@ -47,7 +47,8 @@ class Contracts(unittest.TestCase):
         extend = module('prepare-base').extend
         source = ('size=6G\nchroot "$mountroot" userdel -r alarm\n'
                   'if [[ $profile == arch-kde ]]; then\nfi\n'
-                  'if [[ $profile == arch-kde ]]; then\nfi\n')
+                  'if [[ $profile == arch-kde ]]; then\nfi\n'
+                  'tar --sparse -C "$root/out/$profile-installer" -cf - . | zstd\n')
         result = extend(source)
         self.assertIn('size=32G', result)
         self.assertEqual(result.count('/src/scripts/prepare-root'), 1)

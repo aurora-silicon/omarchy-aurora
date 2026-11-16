@@ -1,0 +1,76 @@
+name: Omarchy Aurora images
+on:
+  workflow_dispatch:
+    inputs:
+      overlay-snapshot:
+        description: Immutable signed Omarchy Aurora package snapshot
+        required: true
+  workflow_run:
+    workflows: [Omarchy Aurora packages]
+    types: [completed]
+permissions:
+  contents: read
+concurrency:
+  group: omarchy-image-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  image:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 180
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - name: Select the immutable package candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REQUESTED_SNAPSHOT: ${{ inputs.overlay-snapshot }}
+          PACKAGE_SOURCE: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          snapshot=$REQUESTED_SNAPSHOT
+          if [[ -z $snapshot ]]; then
+            snapshot=$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=30" \
+              --jq ".[] | select(.target_commitish == \"$PACKAGE_SOURCE\" and (.tag_name | startswith(\"testing-\"))) | .tag_name" | head -1)
+          fi
+          [[ $snapshot =~ ^testing-[0-9]{8}\.[0-9]+$ ]]
+          echo "OMARCHY_OVERLAY_SNAPSHOT=$snapshot" >> "$GITHUB_ENV"
+      - name: Fetch immutable source inputs
+        run: python3 scripts/fetch-inputs.py
+      - name: Build the complete image and run the real VM acceptance gate
+        run: |
+          set -euo pipefail
+          df -B1 "$PWD"
+          docker run --rm --privileged --ipc=host -v /dev:/dev -v /lib/modules:/lib/modules:ro \
+            -v /run/udev:/run/udev:ro -v "$PWD:/src" -w /src \
+            -e OMARCHY_OVERLAY_SNAPSHOT -e GITHUB_SHA \
+            registry.fedoraproject.org/fedora:44 bash -euo pipefail -c '
+              dnf install -y python3 python3-pexpect gnupg2 tar gzip util-linux coreutils btrfs-progs \
+                e2fsprogs dosfstools zstd systemd-udev bsdtar git kmod qemu-system-aarch64 qemu-img dtc ImageMagick
+              bash scripts/build-image
+            ' 2>&1 | tee image-build.log
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8
+        with:
+          subject-path: |
+            out/omarchy-hyprland-filesystems.tar.zst
+            out/vm-result.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: omarchy-hyprland-candidate
+          compression-level: 0
+          path: |
+            image-build.log
+            out/omarchy-hyprland-filesystems.tar.zst*
+            out/omarchy-hyprland-installer/image.json
+            out/omarchy-hyprland-installer/omarchy-provenance.json
+            out/omarchy-hyprland-installer/hardware-versions.json
+            out/vm-result.json
+            out/vm/serial.log
+            out/vm/desktop.png
+          retention-days: 14

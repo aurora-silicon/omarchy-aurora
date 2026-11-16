@@ -4,14 +4,13 @@ root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 [[ $(id -u) == 0 && $(uname -m) == aarch64 ]]
 cd "$root"
 python3 inputs/alarm/scripts/fetch-base.py
-python3 scripts/prepare-runtime.py inputs/runtime
 stage=$(mktemp -d /var/tmp/omarchy-package-root.XXXXXX)
 cleanup() {
   local status=$?
   local clean=1
   python3 inputs/alarm/scripts/stop-image-key-agents.py "$stage" || status=1
-  for path in run sys proc dev; do
-    if mountpoint -q "$stage/$path"; then umount -R "$stage/$path" || clean=0; fi
+  for path in run sys proc dev ''; do
+    if mountpoint -q "$stage${path:+/$path}"; then umount -R "$stage${path:+/$path}" || clean=0; fi
   done
   if (( clean == 1 )); then
     rm -rf -- "$stage"
@@ -25,6 +24,7 @@ trap cleanup EXIT
 bsdtar --exclude='dev/*' -xpf inputs/alarm/cache/base/ArchLinuxARM-aarch64.tar.gz -C "$stage"
 # Pacman downloads as its unprivileged alpm user inside this root.
 chmod 0755 "$stage"
+mount --bind "$stage" "$stage"
 mkdir -p "$stage"/{dev,proc,sys,run,build,output}
 mount --rbind /dev "$stage/dev"
 mount --make-rslave "$stage/dev"
@@ -45,7 +45,9 @@ cp -a overlay packages sources.lock.json LICENSE "$stage/build/aurora/"
 builder_uid=$(chroot "$stage" id -u builder)
 builder_gid=$(chroot "$stage" id -g builder)
 chown -R "$builder_uid:$builder_gid" "$stage/build" "$stage/output"
-chroot "$stage" runuser -u builder -- bash -c 'cd /build/mac; omarchy-mac/test/all'
+chroot "$stage" runuser -u builder -- env OMARCHY_TEST_RUNTIME=/build/runtime \
+  bash -euo pipefail -c 'cd /build/mac; omarchy-mac/test/all; test/integration/all'
+python3 scripts/prepare-runtime.py "$stage/build/runtime"
 mkdir -p out/packages
 for name in omarchy-settings omarchy omarchy-mac omarchy-aurora; do
   chroot "$stage" runuser -u builder -- env \
@@ -54,3 +56,13 @@ for name in omarchy-settings omarchy omarchy-mac omarchy-aurora; do
 done
 cp "$stage"/output/*.pkg.tar.* out/packages/
 python3 scripts/check-packages.py out/packages
+
+python3 - <<'PYVALIDATION'
+from pathlib import Path
+import hashlib,json
+lock=Path('sources.lock.json').read_bytes();data=json.loads(lock)
+Path('out/package-validation.json').write_text(json.dumps({
+  'schema':1,'mac_unit_suite':True,'mac_integration_suite':True,
+  'sources_lock_sha256':hashlib.sha256(lock).hexdigest(),
+  'mac_source':data['omarchy_mac']['commit'],'runtime_source':data['omarchy']['commit']},indent=2)+'\n')
+PYVALIDATION

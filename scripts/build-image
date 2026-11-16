@@ -1,0 +1,30 @@
+#!/bin/bash
+set -euo pipefail
+cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
+[[ $(id -u) == 0 && $(uname -m) == aarch64 ]]
+[[ ${OMARCHY_OVERLAY_SNAPSHOT:?} =~ ^testing-[0-9]{8}\.[0-9]+$ ]]
+python3 - <<'PY'
+import shutil
+free=shutil.disk_usage('.').free
+peak=55*(1<<30)
+if free < peak+8*(1<<30):
+    raise SystemExit('Image/VM closure needs 55 GiB peak plus the 8 GiB free floor')
+print('Image/VM peak budget: 55 GiB; reported free:',free)
+PY
+mkdir -p out/repository
+python3 scripts/download-overlay.py "$OMARCHY_OVERLAY_SNAPSHOT" out/repository
+python3 scripts/prepare-base.py inputs/alarm
+snapshot=$(python3 -c 'import json;print(json.load(open("sources.lock.json"))["alarm"]["snapshot"])')
+bash inputs/alarm/scripts/build-image arch-minimal "$snapshot" testing
+mv inputs/alarm/out/arch-minimal-filesystems.tar.zst out/omarchy-hyprland-filesystems.tar.zst
+sha256sum out/omarchy-hyprland-filesystems.tar.zst > out/omarchy-hyprland-filesystems.tar.zst.sha256
+mv inputs/alarm/out/arch-minimal-installer out/omarchy-hyprland-installer
+python3 scripts/vm-test.py inputs/alarm/out/arch-minimal/aurora.raw --work out/vm --report out/vm-result.json
+python3 - <<'PY'
+import json
+from pathlib import Path
+r=json.loads(Path('out/vm-result.json').read_text())
+required=('boot','encryption','temporary_key_rejected','owner','sudo','second_boot','desktop','shell','terminal','network','original_unchanged')
+assert all(r.get(k) is True for k in required),r
+print('Passing VM candidate ready for authenticated payload assembly')
+PY

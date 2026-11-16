@@ -1,6 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 root=${1:?disposable mounted image root required}
+root=$(realpath -- "$root")
 [[ $(id -u) == 0 && $root == /* && $root != / && -d $root/etc/pacman.d ]]
 [[ -f /src/sources.lock.json && -d /src/out/repository ]]
 mkdir -p "$root/var/lib/omarchy/image" "$root/var/lib/omarchy-aurora" "$root/tmp/omarchy-repository"
@@ -36,7 +37,7 @@ chroot "$root" pacman -S --noconfirm --needed omarchy-aurora/omarchy omarchy-aur
 chroot "$root" bash -c 'OMARCHY_PATH=/usr/share/omarchy omarchy-pkg-defaults aarch64-apple' > /src/out/omarchy-defaults.txt
 python3 /src/scripts/select-desktop-packages.py "$root" /src/out/omarchy-defaults.txt /src/out/desktop-package-plan.json
 mapfile -t desktop_packages < <(python3 -c 'import json; print("\n".join(json.load(open("/src/out/desktop-package-plan.json"))["install"]))')
-chroot "$root" pacman -S --noconfirm --needed "${desktop_packages[@]}" snapper foot qemu-guest-agent
+chroot "$root" pacman -S --noconfirm --needed "${desktop_packages[@]}" snapper foot
 # Pin build-time setup to the same immutable package sources.
 python3 - "$root" <<'PYTEMPLATES'
 import json

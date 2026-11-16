@@ -1,6 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 root=${1:?mounted image root required}
+root=$(realpath -- "$root")
 [[ $(id -u) == 0 && $root == /* && $root != / && -r $root/usr/share/omarchy/version ]]
 chroot "$root" systemctl enable sddm.service omarchy-aurora-hardware.service omarchy-aurora-owners.service
 chroot "$root" systemctl set-default graphical.target

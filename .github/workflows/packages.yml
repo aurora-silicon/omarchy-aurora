@@ -43,13 +43,16 @@ jobs:
             ' 2>&1 | tee packages-build.log
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8
         with:
-          subject-path: out/packages/*.pkg.tar.*
+          subject-path: |
+            out/packages/*.pkg.tar.*
+            out/package-validation.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
           name: omarchy-packages
           path: |
             out/packages/
+            out/package-validation.json
             packages-build.log
           compression-level: 0
           retention-days: 14
@@ -80,7 +83,7 @@ jobs:
           set -euo pipefail
           jq -n '{key:env.ALARM_SIGNING_KEY,passphrase:env.ALARM_SIGNING_PASSPHRASE}' |
             docker run --rm -i --network none -v "$PWD:/src" -w /src omarchy-signer \
-              python3 scripts/sign-repository.py --credentials-stdin --packages candidate/out/packages --output repository
+              python3 scripts/sign-repository.py --credentials-stdin --packages candidate/out/packages --validation candidate/out/package-validation.json --output repository
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: signed-omarchy-repository
