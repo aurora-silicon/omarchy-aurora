@@ -7,7 +7,9 @@
     "commit": "27109d226aa5ec80734f30e5d9e754e433e08f40",
     "snapshot": "testing-20261115.2",
     "manifest_sha256": "01793f2edf33a0ad203c72f1b61a4a476aee163efe795ae6843b12a70698e49a",
-    "sources_sha256": "250aaf140bda45ace12163c7d6d1ee27308db6b1c3d315fb700cc3624a2825e3"
+    "sources_sha256": "250aaf140bda45ace12163c7d6d1ee27308db6b1c3d315fb700cc3624a2825e3",
+    "package_versions_sha256": "8d7582978013f1b5f9e9c6908c612151cc7d511ad37ad63d4315f8ca371ca6c0",
+    "package_database_sha256": "4d42aadddd8d0b4e8ea18ddb497d19d6d034644da06b46388cb4a84e70c4090e"
   },
   "omarchy": {
     "repository": "omacom/omarchy",
@@ -26,5 +28,17 @@
   "recipes": {
     "repository": "omacom/omarchy-pkgs",
     "commit": "b4c914c215561b38031f83133e62a203aef12a3d"
+  },
+  "validation": {
+    "mac_runtime_tests": [
+      "apple-platform-hooks-test.sh",
+      "electron-apple-gl-test.sh",
+      "electron-desktop-repair-test.sh",
+      "fingerprint-readers-test.sh",
+      "mac-keyboard-layout-seam-test.sh",
+      "menu-keybindings-fkeys-test.sh",
+      "package-resolution-fixtures-test.sh",
+      "speaker-owner-test.sh"
+    ]
   }
 }

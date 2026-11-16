@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from compatibility import verify as verify_compatibility
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -33,8 +34,7 @@ def main():
     if not packages or any(p.is_symlink() or not re.fullmatch(r'[A-Za-z0-9_.+:~-]+\.pkg\.tar\.(xz|zst|gz)', p.name) for p in packages):
         parser.error('expected regular versioned package archives')
     validation = json.loads(args.validation.read_text())
-    if not (validation.get('mac_unit_suite') is True and validation.get('mac_integration_suite') is True):
-        raise ValueError('desktop package set has no passing compatibility suites')
+    verify_compatibility(validation, (ROOT / 'sources.lock.json').read_bytes())
     credentials = json.load(sys.stdin) if args.credentials_stdin else {
         'key': os.environ['ALARM_SIGNING_KEY'],
         'passphrase': os.environ['ALARM_SIGNING_PASSPHRASE'],

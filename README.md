@@ -8,6 +8,8 @@ This producer pins the same signed ALARM snapshot and hardware sources as the co
 
 CI builds and signs the overlay packages, builds the complete image, runs VM checks on a disposable copy and publishes only passing deliveries. VM evidence distinguishes generic virtual hardware from actual Apple firmware/hardware qualification. Device firmware and calibration are never distributed.
 
+Package validation runs the complete `omarchy-mac` unit suite and the runtime integration tests listed in `sources.lock.json`. Those cover the shipped Mac platform package; Aurora's encryption, owner setup, reboot and desktop are qualified through the complete image's VM test.
+
 Development is in progress. Published downloads and exact validation evidence will be linked here once the first complete delivery passes.
 
 Snapshots can be created with Snapper. Omarchy's Limine snapshot restore and factory reset are unavailable with Aurora boot; use Aurora recovery or the macOS installer for recovery and reinstalling.

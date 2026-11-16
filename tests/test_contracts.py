@@ -26,6 +26,8 @@ class Contracts(unittest.TestCase):
                          lock['omarchy']['package_database_sha256'])
         self.assertEqual(hashlib.sha256((ROOT / 'sources/alarm-manifest.json').read_bytes()).hexdigest(),
                          lock['alarm']['manifest_sha256'])
+        self.assertEqual(hashlib.sha256((ROOT / 'sources/alarm-package-versions.json').read_bytes()).hexdigest(),
+                         lock['alarm']['package_versions_sha256'])
 
     def test_hardware_aliases_never_resolve_to_the_older_omarchy_stack(self):
         selected, excluded = module('select-desktop-packages').targets(
@@ -42,6 +44,27 @@ class Contracts(unittest.TestCase):
         for after in ({'mesa': '31'}, {}):
             with self.assertRaisesRegex(ValueError, 'hardware package set changed'):
                 check({'mesa': '30'}, after, {'mesa'})
+
+    def test_hardware_must_match_the_exact_signed_snapshot_even_without_a_desktop_change(self):
+        check = module('check-hardware-versions').check
+        check({'mesa': '30'}, {'mesa': '30'}, {'mesa'}, {'mesa': '30'})
+        with self.assertRaisesRegex(ValueError, 'differs from the signed snapshot'):
+            check({'mesa': '31'}, {'mesa': '31'}, {'mesa'}, {'mesa': '30'})
+
+    def test_compatibility_evidence_covers_the_exact_shipped_platform_and_runtime(self):
+        import hashlib
+        lock = (ROOT / 'sources.lock.json').read_bytes()
+        data = json.loads(lock)
+        evidence = {'mac_unit_suite': True, 'mac_integration_suite': True,
+                    'integration_scope': 'omarchy-mac',
+                    'runtime_tests': data['validation']['mac_runtime_tests'],
+                    'sources_lock_sha256': hashlib.sha256(lock).hexdigest(),
+                    'mac_source': data['omarchy_mac']['commit'], 'runtime_source': data['omarchy']['commit']}
+        verify = module('compatibility').verify
+        verify(evidence, lock)
+        for key in evidence:
+            with self.subTest(field=key), self.assertRaises(ValueError):
+                verify(dict(evidence, **{key: None}), lock)
 
     def test_producer_extension_refuses_upstream_contract_drift(self):
         extend = module('prepare-base').extend

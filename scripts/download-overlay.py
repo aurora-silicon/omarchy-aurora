@@ -8,6 +8,7 @@ import re
 import urllib.request
 import subprocess
 import tempfile
+from compatibility import verify as verify_compatibility
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -35,9 +36,7 @@ def download(snapshot, output):
     manifest = json.loads((output / 'manifest.json').read_text())
     validation = manifest.get('validation', {})
     lock = (ROOT / 'sources.lock.json').read_bytes()
-    if (validation.get('mac_unit_suite') is not True or validation.get('mac_integration_suite') is not True
-            or validation.get('sources_lock_sha256') != hashlib.sha256(lock).hexdigest()):
-        raise ValueError('overlay lacks matching, passing source compatibility evidence')
+    verify_compatibility(validation, lock)
     if manifest['signing_key'] != (ROOT / 'keys/fingerprint.txt').read_text().strip() or manifest.get('dry_run'):
         raise ValueError('desktop signer does not match Aurora trust')
     for package in manifest['packages']:

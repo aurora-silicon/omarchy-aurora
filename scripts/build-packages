@@ -57,7 +57,15 @@ chown -R "$builder_uid:$builder_gid" "$stage/build" "$stage/output"
 # Fedora exports container=oci; upstream fixtures use that name for their
 # synthetic iBoot container path. Do not inject the host value into the suite.
 chroot "$stage" runuser -u builder -- env -u container OMARCHY_TEST_RUNTIME=/build/runtime \
-  bash -euo pipefail -c 'cd /build/mac; omarchy-mac/test/all; test/integration/all'
+  bash -euo pipefail -c 'cd /build/mac; omarchy-mac/test/all'
+# Only omarchy-mac ships here. Mac-boot/Limine reset, rekey and restore tests
+# exercise a different provider; the complete Aurora image has its own VM gate.
+mapfile -t runtime_tests < <(python3 -c 'import json;print("\n".join(json.load(open("sources.lock.json"))["validation"]["mac_runtime_tests"]))')
+for runtime_test in "${runtime_tests[@]}"; do
+  [[ $runtime_test =~ ^[a-z-]+-test\.sh$ ]]
+  chroot "$stage" runuser -u builder -- env -u container OMARCHY_TEST_RUNTIME=/build/runtime \
+    bash "/build/mac/test/integration/$runtime_test"
+done
 python3 scripts/prepare-runtime.py "$stage/build/runtime"
 mkdir -p out/packages
 for name in omarchy-settings omarchy omarchy-mac omarchy-aurora; do
@@ -74,6 +82,7 @@ import hashlib,json
 lock=Path('sources.lock.json').read_bytes();data=json.loads(lock)
 Path('out/package-validation.json').write_text(json.dumps({
   'schema':1,'mac_unit_suite':True,'mac_integration_suite':True,
+  'integration_scope':'omarchy-mac','runtime_tests':data['validation']['mac_runtime_tests'],
   'sources_lock_sha256':hashlib.sha256(lock).hexdigest(),
   'mac_source':data['omarchy_mac']['commit'],'runtime_source':data['omarchy']['commit']},indent=2)+'\n')
 PYVALIDATION
