@@ -169,6 +169,10 @@ def prepare(image, work):
             raise ValueError('ambiguous VM kernel modules')
         version = modules[0].name
         shutil.copytree(modules[0], root / 'usr/lib/modules' / version, symlinks=True)
+        # Extraction deliberately avoids package scriptlets; perform the
+        # kernel's depmod hook before mkinitcpio resolves module dependencies.
+        run('chroot', root, 'depmod', '-a', version)
+        run('chroot', root, 'modinfo', '-k', version, 'virtio_net')
         kernels = [generic / p for p in ['boot/Image', 'boot/vmlinuz-linux-aarch64',
                                          'usr/lib/modules/' + version + '/vmlinuz']]
         kernel = next((p for p in kernels if p.is_file()), None)
@@ -218,8 +222,9 @@ def prepare(image, work):
             resolver.symlink_to(original_resolver[1])
         else:
             resolver.write_bytes(original_resolver[1])
-        run('python3', ROOT / 'inputs/alarm/scripts/stop-image-key-agents.py', root)
     finally:
+        if mounts:
+            run('python3', ROOT / 'scripts/stop-image-key-agents.py', root)
         failed = False
         for path in reversed(mounts):
             if subprocess.run(['umount', '-R', str(path)]).returncode:
