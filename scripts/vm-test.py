@@ -367,15 +367,14 @@ def validate(image, work, report_path):
         print('VM: actual Hyprland, Omarchy shell and terminal', flush=True)
         guest('systemctl start graphical.target', sudo=True, timeout=240)
         guest("for n in $(seq 1 60); do pgrep -u $(id -u) -x Hyprland >/dev/null && break; sleep 2; done; pgrep -u $(id -u) -x Hyprland", timeout=180)
-        guest('export HYPRLAND_INSTANCE_SIGNATURE=$(python3 /usr/lib/aurora-vm-desktop-ready); '
-              'test -n "$HYPRLAND_INSTANCE_SIGNATURE" && '
-              'hyprctl -j monitors | python3 -c \'import json,sys;assert any(m["width"]>0 and m["height"]>0 for m in json.load(sys.stdin))\'',
+        guest('python3 /usr/lib/aurora-vm-desktop-ready && '
+              'command hyprctl -i 0 -j monitors | python3 -c \'import json,sys;assert any(m["width"]>0 and m["height"]>0 for m in json.load(sys.stdin))\'',
               timeout=360)
         result['desktop'] = True
         guest('for n in $(seq 1 60); do (pgrep -u $(id -u) -x quickshell || pgrep -u $(id -u) -x qs) && break; sleep 2; done; pgrep -u $(id -u) -x quickshell || pgrep -u $(id -u) -x qs', timeout=180)
         result['shell'] = True
-        guest("hyprctl dispatch exec 'foot --app-id=aurora-ci-terminal sh -c \"echo Omarchy Aurora; sleep 90\"'")
-        guest("for n in $(seq 1 30); do hyprctl -j clients | grep -q aurora-ci-terminal && break; sleep 1; done; hyprctl -j clients | grep -q aurora-ci-terminal", timeout=60)
+        guest("command hyprctl -i 0 dispatch exec 'foot --app-id=aurora-ci-terminal sh -c \"echo Omarchy Aurora; sleep 90\"'")
+        guest("for n in $(seq 1 30); do command hyprctl -i 0 -j clients | grep -q aurora-ci-terminal && break; sleep 1; done; command hyprctl -i 0 -j clients | grep -q aurora-ci-terminal", timeout=60)
         result['terminal'] = True
         qmp(qmp_path, 'screendump', {'filename': str(work / 'desktop.ppm')})
         run('convert', work / 'desktop.ppm', work / 'desktop.png')
