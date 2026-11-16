@@ -109,6 +109,22 @@ jobs:
             --prerelease --title "Omarchy Aurora $tag" --notes 'Signed Omarchy desktop packages; hardware is provided by Aurora ALARM.'
           mkdir -p site/testing/aarch64
           cp repository/* site/testing/aarch64/
+          python3 - "$tag" <<'PYINDEX'
+          import html,json,os,sys
+          from pathlib import Path
+          root=Path('site/testing/aarch64')
+          manifest=json.loads((root/'manifest.json').read_text())
+          rows=''.join('<tr><td>'+html.escape(p['name'])+'</td><td><a href="'+html.escape(p['filename'],quote=True)+'">'+html.escape(p['filename'])+'</a></td><td><a href="'+html.escape(p['filename']+'.sig',quote=True)+'">Signature</a></td></tr>' for p in manifest['packages'])
+          page='''<!doctype html><meta charset="utf-8"><title>Omarchy Aurora packages</title>
+          <style>body{font:16px system-ui;max-width:1000px;margin:48px auto;padding:0 24px}table{border-collapse:collapse}td{padding:10px;border-bottom:1px solid #aaa}a{overflow-wrap:anywhere}</style>
+          <h1>Omarchy Aurora packages</h1><p>Signed desktop packages on the shared Aurora ALARM hardware stack. Development feed: '''+html.escape(sys.argv[1])+'''.</p>
+          <table><tr><th>Package</th><th>Download</th><th>Verification</th></tr>'''+rows+'''</table>
+          <p><a href="manifest.json">Package manifest</a> · <a href="manifest.json.sig">Manifest signature</a> · <a href="aurora-alarm.asc">Public key</a> · <a href="omarchy-aurora.db">Pacman database</a> · <a href="omarchy-aurora.db.sig">Database signature</a></p>
+          <p>Signing fingerprint: <code>'''+html.escape(manifest['signing_key'])+'''</code></p>
+          <p><a href="https://github.com/aurora-silicon/omarchy-aurora">Source and image status</a></p>'''
+          (root/'index.html').write_text(page+'\n')
+          Path('site/index.html').write_text('<!doctype html><meta charset="utf-8"><title>Omarchy Aurora</title><h1>Omarchy Aurora</h1><p><a href="testing/aarch64/">Signed development package feed</a> · <a href="https://github.com/aurora-silicon/omarchy-aurora">Source and image status</a></p>\n')
+          PYINDEX
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
         with:
           path: site
