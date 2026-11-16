@@ -8,10 +8,17 @@ python3 scripts/prepare-runtime.py inputs/runtime
 stage=$(mktemp -d /var/tmp/omarchy-package-root.XXXXXX)
 cleanup() {
   local status=$?
+  local clean=1
+  python3 inputs/alarm/scripts/stop-image-key-agents.py "$stage" || status=1
   for path in run sys proc dev; do
-    if mountpoint -q "$stage/$path"; then umount -R "$stage/$path" || status=1; fi
+    if mountpoint -q "$stage/$path"; then umount -R "$stage/$path" || clean=0; fi
   done
-  if ! mountpoint -q "$stage/dev"; then rm -rf -- "$stage"; fi
+  if (( clean == 1 )); then
+    rm -rf -- "$stage"
+  else
+    echo "Preserving mounted package root at $stage for recovery" >&2
+    status=1
+  fi
   exit "$status"
 }
 trap cleanup EXIT
@@ -21,6 +28,7 @@ mount --rbind /dev "$stage/dev"
 mount -t proc proc "$stage/proc"
 mount --rbind /sys "$stage/sys"
 mount -t tmpfs tmpfs "$stage/run"
+rm -f -- "$stage/etc/resolv.conf"
 cp -L /etc/resolv.conf "$stage/etc/resolv.conf"
 chroot "$stage" pacman-key --init
 chroot "$stage" pacman-key --populate archlinuxarm
