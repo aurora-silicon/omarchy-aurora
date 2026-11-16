@@ -13,7 +13,7 @@ pkgname='omarchy-settings'
 _tag='v4.5.0'
 _commit='a948d8a6871f446b335258c827648ac5f4e9428b'
 pkgver=4.5.0
-pkgrel=3.1
+pkgrel=3.2
 pkgdesc='Omarchy user defaults, /etc/skel content, fonts, plymouth theme, and support helpers'
 # Arch-specific because the shipped /etc tree is not the same on every
 # architecture for older sources: their zram and oomd drop-ins belong to the
@@ -547,12 +547,13 @@ eval "$(declare -f package | sed '1s/package/package_upstream/')"
 package() {
   package_upstream
   rm -f "$pkgdir/etc/mkinitcpio.conf.d/omarchy_hooks.conf" \
+    "$pkgdir/etc/mkinitcpio.conf.d/00-omarchy-hooks.conf" \
     "$pkgdir/etc/limine-entry-tool.d/omarchy-defaults.conf" \
     "$pkgdir/etc/limine-entry-tool.d/omarchy-uki.conf"
   local kept=() item
   for item in "${backup[@]}"; do
     case $item in
-      etc/mkinitcpio.conf.d/omarchy_hooks.conf|etc/limine-entry-tool.d/*) ;;
+      etc/mkinitcpio.conf.d/omarchy_hooks.conf|etc/mkinitcpio.conf.d/00-omarchy-hooks.conf|etc/limine-entry-tool.d/*) ;;
       *) kept+=("$item");;
     esac
   done

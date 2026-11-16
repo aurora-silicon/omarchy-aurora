@@ -14,7 +14,8 @@ def check(root):
             raise ValueError('incomplete Omarchy image: ' + name)
     for name in ['usr/lib/systemd/system/omarchy-firstboot.service',
                  'usr/lib/initcpio/hooks/omarchy-mac-encrypt',
-                 'etc/mkinitcpio.conf.d/omarchy_hooks.conf']:
+                 'etc/mkinitcpio.conf.d/omarchy_hooks.conf',
+                 'etc/mkinitcpio.conf.d/00-omarchy-hooks.conf']:
         if (root / name).exists():
             raise ValueError('competing upstream boot stack: ' + name)
     config = (root / 'etc/pacman.conf').read_text()

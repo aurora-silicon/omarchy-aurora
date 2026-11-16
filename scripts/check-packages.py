@@ -20,7 +20,8 @@ def check(directory):
             ['bsdtar', '-tf', str(package)], text=True).splitlines()]
         if any(path.startswith(FORBIDDEN) for path in files):
             raise ValueError('overlay attempts to replace boot/kernel files: ' + name)
-        if name == 'omarchy-settings' and 'etc/mkinitcpio.conf.d/omarchy_hooks.conf' in files:
+        if name == 'omarchy-settings' and any(path in files for path in (
+                'etc/mkinitcpio.conf.d/omarchy_hooks.conf', 'etc/mkinitcpio.conf.d/00-omarchy-hooks.conf')):
             raise ValueError('Omarchy initramfs would replace Aurora hooks')
     if names != EXPECTED:
         raise ValueError('incomplete desktop package set')
