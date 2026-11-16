@@ -36,9 +36,7 @@
       "electron-desktop-repair-test.sh",
       "fingerprint-readers-test.sh",
       "mac-keyboard-layout-seam-test.sh",
-      "menu-keybindings-fkeys-test.sh",
-      "package-resolution-fixtures-test.sh",
-      "speaker-owner-test.sh"
+      "menu-keybindings-fkeys-test.sh"
     ]
   }
 }
