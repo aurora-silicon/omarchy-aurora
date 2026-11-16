@@ -32,11 +32,12 @@ class Contracts(unittest.TestCase):
     def test_hardware_aliases_never_resolve_to_the_older_omarchy_stack(self):
         selected, excluded = module('select-desktop-packages').targets(
             ['m1n1-aurora', 'linux-asahi', 'vulkan-asahi', 'libva-v4l2_request-avd',
-             'omarchy-mac-boot', 'limine', 'foot', 'nvim', 'dotnet-runtime'],
-            {'aura', 'linux-aurora', 'vulkan-aurora', 'libva-v4l2-request-avd'})
+             'omarchy-mac-boot', 'limine', 'foot', 'nvim', 'dotnet-runtime',
+             'omarchy-power-profiles-daemon'],
+            {'aura', 'linux-aurora', 'vulkan-aurora', 'libva-v4l2-request-avd', 'power-profiles-daemon'})
         self.assertEqual(selected, ['aurora/aura', 'aurora/linux-aurora', 'aurora/vulkan-aurora',
                                     'aurora/libva-v4l2-request-avd', 'omarchy-aurora/omarchy-aurora',
-                                    'foot', 'neovim', 'dotnet-runtime-bin'])
+                                    'foot', 'neovim', 'dotnet-runtime-bin', 'aurora/power-profiles-daemon'])
         self.assertEqual(excluded, ['limine'])
 
     def test_changed_or_removed_hardware_is_a_hard_failure(self):

@@ -4,6 +4,10 @@ root=${1:?disposable mounted image root required}
 root=$(realpath -- "$root")
 [[ $(id -u) == 0 && $root == /* && $root != / && -d $root/etc/pacman.d ]]
 [[ -f /src/sources.lock.json && -d /src/out/repository ]]
+# Package scriptlets require /run to have the same ownership and permissions
+# as on a booted system; the disposable builder mounts a fresh tmpfs there.
+chmod 0755 "$root/run"
+install -d -m 0755 "$root/run/lock"
 mkdir -p "$root/var/lib/omarchy/image" "$root/var/lib/omarchy-aurora" "$root/tmp/omarchy-repository"
 printf 'format=1\nplatform=aarch64-apple\n' > "$root/var/lib/omarchy/image/target"
 chmod 0644 "$root/var/lib/omarchy/image/target"
