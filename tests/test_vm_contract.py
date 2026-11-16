@@ -59,6 +59,16 @@ class VMContract(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'extent'):
                 vm.partitions(path)
 
+    def test_4k_partition_byte_extents_become_exact_512_byte_dm_sectors(self):
+        self.assertEqual(vm.linear_table(Path('/dev/nbd0'),
+                         {'offset': 133120 * 4096, 'bytes': 262144 * 4096}),
+                         '0 2097152 linear /dev/nbd0 1064960')
+        for device, row in [('/dev/sda', {'offset': 0, 'bytes': 4096}),
+                            ('/dev/nbd0', {'offset': 1, 'bytes': 4096}),
+                            ('/dev/nbd0', {'offset': 0, 'bytes': 4097})]:
+            with self.assertRaises(ValueError):
+                vm.linear_table(Path(device), row)
+
 
 if __name__ == '__main__':
     unittest.main()

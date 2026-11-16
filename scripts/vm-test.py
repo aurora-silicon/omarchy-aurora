@@ -84,6 +84,24 @@ def write(root, name, text, executable=False):
     path.chmod(0o755 if executable else 0o644)
 
 
+def linear_table(device, row):
+    if (not re.fullmatch(r'/dev/nbd[0-9]+', str(device)) or row['offset'] < 0
+            or row['bytes'] <= 0 or row['offset'] % 512 or row['bytes'] % 512):
+        raise ValueError('invalid disposable NBD partition mapping')
+    # Device-mapper tables always count 512-byte sectors, even for a 4K GPT.
+    return f"0 {row['bytes'] // 512} linear {device} {row['offset'] // 512}"
+
+
+def wait_size(device, expected):
+    deadline = time.monotonic() + 20
+    while time.monotonic() < deadline:
+        answer = subprocess.run(['blockdev', '--getsize64', str(device)], capture_output=True, text=True)
+        if answer.returncode == 0 and answer.stdout.strip() == str(expected):
+            return
+        time.sleep(0.1)
+    raise RuntimeError('block device did not expose the expected byte extent: ' + str(device))
+
+
 def prepare(image, work):
     rows = partitions(image)
     required = rows[2]['bytes'] + (10 << 30)
@@ -98,16 +116,27 @@ def prepare(image, work):
         raise RuntimeError('no unused VM NBD device')
     root = work / 'root'
     root.mkdir()
-    loops, mounts = [], []
+    mappings, mounts = [], []
     run('qemu-nbd', '--connect=' + str(device), '--format=qcow2', overlay)
     try:
-        for row in rows:
-            loops.append(run('losetup', '--find', '--show', '--sector-size', '4096',
-                             '--offset', row['offset'], '--sizelimit', row['bytes'],
-                             device, capture=True).strip())
-        for block, target, options in [(loops[2], root, 'subvol=root'),
-                                        (loops[1], root / 'boot', None),
-                                        (loops[0], root / 'boot/efi', None)]:
+        wait_size(device, image.stat().st_size)
+        run('modprobe', 'dm_mod')
+        prefix = 'omarchy-vm-' + secrets.token_hex(6)
+        for index, row in enumerate(rows):
+            name = prefix + '-' + str(index)
+            run('dmsetup', '--noudevsync', 'create', name, '--table', linear_table(device, row))
+            mappings.append(name)
+            run('dmsetup', 'mknodes', name)
+            block = Path('/dev/mapper') / name
+            wait_size(block, row['bytes'])
+            kind = run('blkid', '-p', '-s', 'TYPE', '-o', 'value', block, capture=True).strip()
+            if kind != ['vfat', 'ext4', 'btrfs'][index]:
+                raise ValueError(f'VM partition {index} has {kind!r}, not its exported filesystem')
+            print('VM partition:', name, kind, row, flush=True)
+        blocks = [Path('/dev/mapper') / name for name in mappings]
+        for block, target, options in [(blocks[2], root, 'subvol=root'),
+                                        (blocks[1], root / 'boot', None),
+                                        (blocks[0], root / 'boot/efi', None)]:
             target.mkdir(parents=True, exist_ok=True)
             run('mount', *(['-o', options] if options else []), block, target)
             mounts.append(target)
@@ -197,8 +226,8 @@ def prepare(image, work):
                 failed = True
         if failed:
             raise RuntimeError('preserving mounted VM preparation root for recovery')
-        for loop in reversed(loops):
-            run('losetup', '-d', loop)
+        for name in reversed(mappings):
+            run('dmsetup', '--noudevsync', 'remove', name)
         run('qemu-nbd', '--disconnect', device)
     return overlay, rows, layout, version
 
