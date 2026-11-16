@@ -3,6 +3,11 @@ set -euo pipefail
 root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 [[ $(id -u) == 0 && $(uname -m) == aarch64 ]]
 cd "$root"
+python3 - <<'PYSPACE'
+import shutil
+if shutil.disk_usage('/var/tmp').free < 13*(1<<30):
+    raise SystemExit('Package build needs 5 GiB peak plus the 8 GiB free floor')
+PYSPACE
 python3 inputs/alarm/scripts/fetch-base.py
 stage=$(mktemp -d /var/tmp/omarchy-package-root.XXXXXX)
 cleanup() {
@@ -36,7 +41,11 @@ rm -f -- "$stage/etc/resolv.conf"
 cp -L /etc/resolv.conf "$stage/etc/resolv.conf"
 chroot "$stage" pacman-key --init
 chroot "$stage" pacman-key --populate archlinuxarm
-chroot "$stage" pacman -Syu --noconfirm --needed base-devel git imagemagick python systemd jq
+chroot "$stage" pacman -Syu --noconfirm --needed base-devel git imagemagick python systemd jq \
+  lua python-yaml nodejs npm ripgrep shellcheck ffmpeg kitty gum plocate openssh unzip bc \
+  libarchive libxkbcommon desktop-file-utils glib2 sqlite dtc
+sed -i 's/^#\(en_US\.UTF-8 UTF-8\)/\1/' "$stage/etc/locale.gen"
+chroot "$stage" locale-gen
 chroot "$stage" useradd -m builder
 cp -a inputs/runtime "$stage/build/runtime"
 cp -a inputs/mac "$stage/build/mac"
