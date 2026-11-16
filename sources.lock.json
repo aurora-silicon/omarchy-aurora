@@ -6,7 +6,8 @@
     "repository": "aurora-silicon/alarm-aurora",
     "commit": "27109d226aa5ec80734f30e5d9e754e433e08f40",
     "snapshot": "testing-20261115.2",
-    "manifest_sha256": "01793f2edf33a0ad203c72f1b61a4a476aee163efe795ae6843b12a70698e49a"
+    "manifest_sha256": "01793f2edf33a0ad203c72f1b61a4a476aee163efe795ae6843b12a70698e49a",
+    "sources_sha256": "250aaf140bda45ace12163c7d6d1ee27308db6b1c3d315fb700cc3624a2825e3"
   },
   "omarchy": {
     "repository": "omacom/omarchy",

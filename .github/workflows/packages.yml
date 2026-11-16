@@ -38,7 +38,7 @@ jobs:
           df -B1 "$PWD"
           docker run --rm --privileged --ipc=host -v /dev:/dev -v "$PWD:/src" -w /src \
             registry.fedoraproject.org/fedora:44 bash -euo pipefail -c '
-              dnf install -y python3 gnupg2 tar gzip util-linux coreutils bsdtar
+              dnf install -y python3 gnupg2 tar gzip util-linux coreutils bsdtar git
               bash scripts/build-packages
             ' 2>&1 | tee packages-build.log
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8
