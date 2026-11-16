@@ -30,6 +30,7 @@ Server = https://pkgs.omarchy.org/edge/aarch64
 (root/'var/lib/pacman/sync/omarchy.db').write_bytes(Path('/src/sources/omarchy.db').read_bytes())
 PY
 cp /src/out/repository/omarchy-aurora.db "$root/var/lib/pacman/sync/omarchy-aurora.db"
+cp /src/out/repository/omarchy-aurora.db.sig "$root/var/lib/pacman/sync/omarchy-aurora.db.sig"
 chroot "$root" pacman -S --noconfirm omarchy-aurora/omarchy-settings
 # Refresh reuses the committed database, not the rolling upstream one.
 cp /src/sources/omarchy.db "$root/var/lib/pacman/sync/omarchy.db"

@@ -33,6 +33,13 @@ def prepare(runtime):
     replace(runtime / 'install/config/snapper.sh',
             'systemctl enable --now snapper-cleanup.timer limine-snapper-sync.service',
             'systemctl enable --now snapper-cleanup.timer')
+    replace(runtime / 'bin/omarchy-snapshot',
+            'echo "Snapshots can be selected during boot."',
+            'echo "Snapshot recorded by Snapper. Aurora does not provide a boot snapshot menu."')
+    replace(runtime / 'bin/omarchy-snapshot',
+            '  sudo limine-snapper-restore',
+            '  echo "Automatic snapshot restore is unavailable with Aurora boot. Use Aurora recovery or reinstall from macOS." >&2\n'
+            '  exit 2')
     (runtime / 'version').write_text(lock['version'] + '\n')
     print('Prepared Aurora boot-provider and repository integration in the pinned runtime')
 

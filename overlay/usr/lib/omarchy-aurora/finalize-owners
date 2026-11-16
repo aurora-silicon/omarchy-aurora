@@ -5,6 +5,23 @@ while IFS=: read -r name _ uid gid _ directory shell; do
   (( uid >= 1000 && uid < 60000 )) || continue
   [[ $shell != */nologin && $shell != */false ]] || continue
   if [[ ! -e $directory/.local/state/omarchy/done/finalize-user ]]; then
+    # Replay upstream's deferred group grants after Aurora creates the owner.
+    # Docker remains opt-in; raw input access requires the feature that uses it.
+    groups=()
+    if [[ -f /var/lib/omarchy/provisioning/groups ]]; then
+      while IFS= read -r group; do
+        [[ $group =~ ^[a-z_][a-z0-9_-]*$ && $group != docker ]] || continue
+        if [[ $group == input ]] && ! pacman -Qq xpadneo-dkms &>/dev/null && ! pacman -Qq ydotool &>/dev/null; then
+          continue
+        fi
+        getent group "$group" >/dev/null || continue
+        groups+=("$group")
+      done < /var/lib/omarchy/provisioning/groups
+    fi
+    if (( ${#groups[@]} )); then
+      group_list=$(IFS=,; printf '%s' "${groups[*]}")
+      usermod -aG "$group_list" "$name"
+    fi
     runuser -u "$name" -- env HOME="$directory" USER="$name" LOGNAME="$name" \
       OMARCHY_PATH=/usr/share/omarchy /usr/bin/omarchy-provision-user --first-install
   fi
