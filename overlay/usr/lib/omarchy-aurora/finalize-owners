@@ -1,0 +1,11 @@
+#!/bin/bash
+set -euo pipefail
+[[ $(id -u) == 0 ]]
+while IFS=: read -r name _ uid gid _ directory shell; do
+  (( uid >= 1000 && uid < 60000 )) || continue
+  [[ $shell != */nologin && $shell != */false ]] || continue
+  if [[ ! -e $directory/.local/state/omarchy/done/finalize-user ]]; then
+    runuser -u "$name" -- env HOME="$directory" USER="$name" LOGNAME="$name" \
+      OMARCHY_PATH=/usr/share/omarchy /usr/bin/omarchy-provision-user --first-install
+  fi
+done < /etc/passwd

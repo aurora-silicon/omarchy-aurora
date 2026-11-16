@@ -1,0 +1,597 @@
+{
+  "schema": 1,
+  "architecture": "aarch64",
+  "channel": "testing",
+  "signing_key": "A33623FB30665BEFAA0FFB6DE35EC749219B20F7",
+  "dry_run": false,
+  "packages": [
+    {
+      "name": "alsa-card-profiles",
+      "filename": "alsa-card-profiles-1_1.6.10-1.6-aarch64.pkg.tar.xz",
+      "bytes": 28396,
+      "sha256": "fe34e9e7741c800957a0d8c50ca361b2c13e5ea86fabaaaa06d1c5cc2c99e1b1"
+    },
+    {
+      "name": "alsa-ucm-conf-aurora",
+      "filename": "alsa-ucm-conf-aurora-10.aurora2-5-any.pkg.tar.xz",
+      "bytes": 8688,
+      "sha256": "2d98d62582578acba7035a351e7be967858877ecdc0b06c4295f6be8bcef1611"
+    },
+    {
+      "name": "alsa-utils-aurora",
+      "filename": "alsa-utils-aurora-1.2.16-1-aarch64.pkg.tar.xz",
+      "bytes": 1134648,
+      "sha256": "204ce0b43e7d3688478f03709cbfc38ee5704a0e1e174abcb4a4dcd9f7c152ad"
+    },
+    {
+      "name": "asahi-scripts",
+      "filename": "asahi-scripts-20261023-9-any.pkg.tar.xz",
+      "bytes": 24456,
+      "sha256": "11bc1ece6823e7a7b5035836f64e601a2067596d3452ade52efdba2020c23bc3"
+    },
+    {
+      "name": "aura",
+      "filename": "aura-1.0.0b13.1-1-aarch64.pkg.tar.xz",
+      "bytes": 649264,
+      "sha256": "8469d384280a9b3d1ad1e68cdc3df820faae397c37dfa16d409028fc581cafcc"
+    },
+    {
+      "name": "aurora-audio",
+      "filename": "aurora-audio-4.1.aurora2-16-any.pkg.tar.xz",
+      "bytes": 1405444,
+      "sha256": "b161fd19b64e9c202eb13d7f8069f83267f8b9c2ed799d6bc3dca9c825dd582d"
+    },
+    {
+      "name": "aurora-bless",
+      "filename": "aurora-bless-0.4.4.aurora5-1-aarch64.pkg.tar.xz",
+      "bytes": 290188,
+      "sha256": "5cfc17ef1a4f3bae64aadd5805dfc9375a7189cc15ed6a6e35fc7f430b629e04"
+    },
+    {
+      "name": "aurora-boot",
+      "filename": "aurora-boot-20261018-17-any.pkg.tar.xz",
+      "bytes": 8560,
+      "sha256": "a9961526e2461fc12805b9bced8b0bbdd543ff910e5fcb39313f99cec44a2ef8"
+    },
+    {
+      "name": "aurora-btsync",
+      "filename": "aurora-btsync-0.4.4.aurora5-1-aarch64.pkg.tar.xz",
+      "bytes": 339088,
+      "sha256": "ae97daf2f532fc425fa0a1c45bd4a0d75cf22e9dabb4a5c8bed86f6aed0e8122"
+    },
+    {
+      "name": "aurora-camera-denoise",
+      "filename": "aurora-camera-denoise-0.1.0-9-aarch64.pkg.tar.xz",
+      "bytes": 92104,
+      "sha256": "b9a7cb8b13b01315aad4b83fafd60d30172e1ccd9fe61d6d589a7e869a7f61f3"
+    },
+    {
+      "name": "aurora-diag",
+      "filename": "aurora-diag-0.5.0-1-any.pkg.tar.xz",
+      "bytes": 164896,
+      "sha256": "92b304099100d4ce36790a90c0d72cd66682117c7e68fd50bf6f44ac52e0cae9"
+    },
+    {
+      "name": "aurora-fido",
+      "filename": "aurora-fido-0.2.0-2-aarch64.pkg.tar.xz",
+      "bytes": 66452,
+      "sha256": "7f8787c3ac75e3ddf8fdd6c4b4fee06e0c513c5a42a04b751f4910925ef5b03c"
+    },
+    {
+      "name": "aurora-firmware",
+      "filename": "aurora-firmware-20261018-6-any.pkg.tar.xz",
+      "bytes": 6552,
+      "sha256": "792c6b087c7215c36cd0ed14ed1047f9b299b17cc8801df45bf31362252bff94"
+    },
+    {
+      "name": "aurora-firstboot",
+      "filename": "aurora-firstboot-0.1.13-5-any.pkg.tar.xz",
+      "bytes": 32748,
+      "sha256": "ed1a890ddc3ef7ecc99bd7c392afd2508959767b579a6a6ff529130dbca998f7"
+    },
+    {
+      "name": "aurora-flatpak-gl",
+      "filename": "aurora-flatpak-gl-1_26.3.0_devel.202611150611.d4ad4a4dce6-1-aarch64.pkg.tar.xz",
+      "bytes": 158206144,
+      "sha256": "bd89be6732b37355dd1b28b4061c50325ccbcb11f28edaabce6ab3e208f2a4d9"
+    },
+    {
+      "name": "aurora-kbd-light",
+      "filename": "aurora-kbd-light-0.1.0-3-aarch64.pkg.tar.xz",
+      "bytes": 10192,
+      "sha256": "77741ef8779f0b4ddc1dc5505a0aaabac75e07611310004b8dcdba5a3408b9fc"
+    },
+    {
+      "name": "aurora-keep-config",
+      "filename": "aurora-keep-config-1-2-any.pkg.tar.xz",
+      "bytes": 4772,
+      "sha256": "a68156f66e325fcdf7f106b59d37957f8a07dcfa3b37953a13fc2f3aefdc3f9b"
+    },
+    {
+      "name": "aurora-keyring",
+      "filename": "aurora-keyring-20261018-3-any.pkg.tar.xz",
+      "bytes": 3532,
+      "sha256": "176badecfe016ed99d39df2262f2f5dbcb1cb84c3fc8a6974801ef46d7c73416"
+    },
+    {
+      "name": "aurora-logos",
+      "filename": "aurora-logos-1-1-any.pkg.tar.xz",
+      "bytes": 105796,
+      "sha256": "a44b86d2899d79b83605a99fded622a94043041727b9d8a24f742774027701ef"
+    },
+    {
+      "name": "aurora-neo-platform-config",
+      "filename": "aurora-neo-platform-config-0.1.0-2-any.pkg.tar.xz",
+      "bytes": 4220,
+      "sha256": "957814ab50f83b5f3814ec688a41bcdfe3c568e2b364929d60344d669d02f515"
+    },
+    {
+      "name": "aurora-nvram",
+      "filename": "aurora-nvram-0.4.4.aurora5-1-aarch64.pkg.tar.xz",
+      "bytes": 254668,
+      "sha256": "9d4b8ae52d5eb47aa81216e4ecfc7b39b81fe43d77a800b87432140914274083"
+    },
+    {
+      "name": "aurora-panel-nits",
+      "filename": "aurora-panel-nits-0.4.4.aurora5-1-aarch64.pkg.tar.xz",
+      "bytes": 164032,
+      "sha256": "85b1a5ad8f16b725fab436e8382e1cbaf6956d6b63a441afd06554d3927f5054"
+    },
+    {
+      "name": "aurora-power-budget",
+      "filename": "aurora-power-budget-0.1.13-5-any.pkg.tar.xz",
+      "bytes": 14156,
+      "sha256": "13518b0c98d579eb79704ce4450eca0d6c3b293971901f09795d2de08a834b0d"
+    },
+    {
+      "name": "aurora-secboot",
+      "filename": "aurora-secboot-0.1.13-5-any.pkg.tar.xz",
+      "bytes": 32144,
+      "sha256": "09f8d48a3a3d26d71e5d9e6a0fea58ed8ca9935ad9ef2b657fbe97d011837352"
+    },
+    {
+      "name": "aurora-sep",
+      "filename": "aurora-sep-1-25-any.pkg.tar.xz",
+      "bytes": 45984,
+      "sha256": "9df7321084843690c769f193f9ae5cd77b5dbb62319b9ee8173b1a1e8ef4ed0e"
+    },
+    {
+      "name": "aurora-sep-luks",
+      "filename": "aurora-sep-luks-0.3.0-1-aarch64.pkg.tar.xz",
+      "bytes": 64728,
+      "sha256": "c5c2f9a5e0eff3fabf373f9cc83f96d827f51eedc806ba0b2407780a1158b8ed"
+    },
+    {
+      "name": "aurora-sep-sk",
+      "filename": "aurora-sep-sk-0.1.0-1-aarch64.pkg.tar.xz",
+      "bytes": 11560,
+      "sha256": "be639c360d78f024dfcf1ca04304f30c6f18191f7086802d7621e47c10e02b76"
+    },
+    {
+      "name": "aurora-speaker-upgrade",
+      "filename": "aurora-speaker-upgrade-0.1-0.15-any.pkg.tar.xz",
+      "bytes": 54540,
+      "sha256": "8405b91294f046dad7788a10684c0a981561994e29d9be61b11aebf14fe89f62"
+    },
+    {
+      "name": "aurora-steam-native",
+      "filename": "aurora-steam-native-1_0.r202610301134.c06f610e360-1-any.pkg.tar.xz",
+      "bytes": 16196,
+      "sha256": "1d3b2d07fd62c499d60d65b78d5afd05e4eb0804c844e2095d3ac13b8504c7b4"
+    },
+    {
+      "name": "aurora-system-fixes",
+      "filename": "aurora-system-fixes-1-12-any.pkg.tar.xz",
+      "bytes": 8452,
+      "sha256": "47387a55500d1a0828d88ce036c9241fabfc7dd79bfe2f552169d4a9f561d02a"
+    },
+    {
+      "name": "aurora-touchid-rearm",
+      "filename": "aurora-touchid-rearm-1-5-aarch64.pkg.tar.xz",
+      "bytes": 15508,
+      "sha256": "7cbd9bb20e798c5d5d5deb7e011caeef62d184b02aff0a219a67fc266bb0dc6e"
+    },
+    {
+      "name": "aurora-userpages",
+      "filename": "aurora-userpages-7.3.0.aurora1-40-aarch64.pkg.tar.xz",
+      "bytes": 7312,
+      "sha256": "fac7fa6a2319e29b52121492e9f0bbcdf9fdc8099ca726eb3fc857bce72ec46a"
+    },
+    {
+      "name": "aurora-wifi-firmware",
+      "filename": "aurora-wifi-firmware-0.2-1-any.pkg.tar.xz",
+      "bytes": 31840,
+      "sha256": "97fdf3d72d9f0d91e5c226a416d45bf1b4d2e973a02f429d775d5120caf22eeb"
+    },
+    {
+      "name": "aurora-xart",
+      "filename": "aurora-xart-0.1.0-1-any.pkg.tar.xz",
+      "bytes": 30512,
+      "sha256": "677e304f365e20e3920c902a33a27fe17d7e78861ebaabd4cd0fb0e02a2fe84b"
+    },
+    {
+      "name": "avd-fw",
+      "filename": "avd-fw-0.1.aurora3-1-aarch64.pkg.tar.xz",
+      "bytes": 23312,
+      "sha256": "b68cf90bdb79cab090252a077e71c38ad6835d463c1deea7449351e24a995d34"
+    },
+    {
+      "name": "bankstown",
+      "filename": "bankstown-1.1.0-1-aarch64.pkg.tar.xz",
+      "bytes": 132412,
+      "sha256": "4cf6b99d9a844bfa6454ba9b37c90cee3730420f2ee7701a044b4b58bdc0c959"
+    },
+    {
+      "name": "docker",
+      "filename": "docker-1_29.9.2-1.1-aarch64.pkg.tar.xz",
+      "bytes": 25409344,
+      "sha256": "d85699b9db6c09c63f88baa69a00eeb9340316533e6b4bde78a18f029b980711"
+    },
+    {
+      "name": "fex-emu",
+      "filename": "fex-emu-2610.r202611061239.0c08727ae4c-1-aarch64.pkg.tar.xz",
+      "bytes": 1428040,
+      "sha256": "aaa76705663f618fdd1d6a5e5bbf0492ada24911816dd1357a37b0b1de02fcdb"
+    },
+    {
+      "name": "fex-emu-steam",
+      "filename": "fex-emu-steam-2610.r202611061239.0c08727ae4c-1-aarch64.pkg.tar.xz",
+      "bytes": 1311908,
+      "sha256": "f7839a6360e4a72ba71e891dcda4e7f30a7add9630e4f77493309d17b55f9dd7"
+    },
+    {
+      "name": "firefox",
+      "filename": "firefox-160.0-1.2-aarch64.pkg.tar.xz",
+      "bytes": 73303196,
+      "sha256": "63ba376e90f593b7571fe8d4973903bd336216705e9d8457e6407ab5875c442f"
+    },
+    {
+      "name": "fprintd-aurora",
+      "filename": "fprintd-aurora-1.94.5-4-aarch64.pkg.tar.xz",
+      "bytes": 139480,
+      "sha256": "cc7301816201d2d325d60aa11fac4471adaa487bc1cffc20f4ebcd3c2c26fa57"
+    },
+    {
+      "name": "gnome-settings-daemon-aurora",
+      "filename": "gnome-settings-daemon-aurora-51.1.aurora1-1-aarch64.pkg.tar.xz",
+      "bytes": 907012,
+      "sha256": "9f043eef2ec16fdf4c2e89877132f962dc51d700ad71331e233b4fac116a3dc5"
+    },
+    {
+      "name": "gst-plugin-pipewire",
+      "filename": "gst-plugin-pipewire-1_1.6.10-1.6-aarch64.pkg.tar.xz",
+      "bytes": 78696,
+      "sha256": "338a3d2f86b8f58065f2ae1d30f4bcdc03011e9c09109558e6bd44892c8f30db"
+    },
+    {
+      "name": "gtk2",
+      "filename": "gtk2-2.24.33-5-aarch64.pkg.tar.xz",
+      "bytes": 5510344,
+      "sha256": "f00323ae9aed59c2cca362a959cbe07301a9ccd99c7f8636cac54e1abaa62ab4"
+    },
+    {
+      "name": "iio-sensor-proxy-aurora",
+      "filename": "iio-sensor-proxy-aurora-3.9.aurora1-1-aarch64.pkg.tar.xz",
+      "bytes": 38232,
+      "sha256": "4b98b2901c3e247dcd807fa7374eaeb42bd1554ae3f900bbedfa48dbdc5aedd4"
+    },
+    {
+      "name": "iwd-aurora",
+      "filename": "iwd-aurora-3.12-2-aarch64.pkg.tar.xz",
+      "bytes": 529940,
+      "sha256": "5a514e809362429f2624fc9d96d6ff6e18d38f79b226989d8a73cd940577294b"
+    },
+    {
+      "name": "kinfocenter",
+      "filename": "kinfocenter-6.8.2-1-aarch64.pkg.tar.xz",
+      "bytes": 986672,
+      "sha256": "5db7438efb12b3664316cac9b424d1d00d1343eab0139d3d0df846341e6e8d8a"
+    },
+    {
+      "name": "kwin-aurora",
+      "filename": "kwin-aurora-6.8.2.aurora1-2-aarch64.pkg.tar.xz",
+      "bytes": 10570404,
+      "sha256": "eba6717db6401686d9f1b800b9e8cfcc73ca6aaf8157d5d83aa4eb5655778532"
+    },
+    {
+      "name": "libfprint-aurora",
+      "filename": "libfprint-aurora-1.94.100-9-aarch64.pkg.tar.xz",
+      "bytes": 8288296,
+      "sha256": "0ec924dd773d515b06e4301699be108cedbe19fda7ac74fe7cf439f4561c38f3"
+    },
+    {
+      "name": "libpipewire",
+      "filename": "libpipewire-1_1.6.10-1.6-aarch64.pkg.tar.xz",
+      "bytes": 1335440,
+      "sha256": "b97d4cfbc04674e3349ded9103936ba4d55cdd607eb81ed19a5825d43489f7bf"
+    },
+    {
+      "name": "libva-v4l2-request-avd",
+      "filename": "libva-v4l2-request-avd-1.3.r11-1-aarch64.pkg.tar.xz",
+      "bytes": 108368,
+      "sha256": "542f2eea8f5333873f3279568b6e73b98e90bd66215a7f20d0b0cec775e6799b"
+    },
+    {
+      "name": "linux-aurora",
+      "filename": "linux-aurora-7.3.0.aurora1-40-aarch64.pkg.tar.xz",
+      "bytes": 39616972,
+      "sha256": "aaae84ca10c565012323a548f412d92686858dfbbbb4f19f2739e0471b59e3c1"
+    },
+    {
+      "name": "linux-aurora-headers",
+      "filename": "linux-aurora-headers-7.3.0.aurora1-40-aarch64.pkg.tar.xz",
+      "bytes": 23429160,
+      "sha256": "2fa20bdf204330ffa9543bed47cb32350ecbe536a9b089e535608ab46e2daf18"
+    },
+    {
+      "name": "lsp-plugins-lv2",
+      "filename": "lsp-plugins-lv2-1.2.37-1.1-aarch64.pkg.tar.xz",
+      "bytes": 5635976,
+      "sha256": "473685007afdbc05a3340c9af0c1353574e250daafc64ce7a2e72d6857d2003b"
+    },
+    {
+      "name": "lzfse",
+      "filename": "lzfse-1.0-1-aarch64.pkg.tar.xz",
+      "bytes": 24180,
+      "sha256": "d7c8567bacf79cc7c44b577e1e21763c21d7f2aeaf5831006a796a63bd614b0f"
+    },
+    {
+      "name": "mesa-aurora",
+      "filename": "mesa-aurora-1_26.3.0_devel.202611150611.d4ad4a4dce6-1-aarch64.pkg.tar.xz",
+      "bytes": 5092840,
+      "sha256": "63fc6c12a73e32d3cd75fe07fe58e169703c8e7caddcebe3cf8bc8a1e63b1d4f"
+    },
+    {
+      "name": "mesa-aurora-fex-guest",
+      "filename": "mesa-aurora-fex-guest-1_26.3.0_devel.202611150611.d4ad4a4dce6-1-any.pkg.tar.zst",
+      "bytes": 37256345,
+      "sha256": "d2774bc339b9dcfacb728fceb7007679ca028ef5b39c0ce1538b88df9b131bb7"
+    },
+    {
+      "name": "mil-hwx-compiler",
+      "filename": "mil-hwx-compiler-0.3.1-1-aarch64.pkg.tar.xz",
+      "bytes": 1592736,
+      "sha256": "9ebc7a4d0770742b8b68f88ec20b703f2f5d0dd49f61646762b1b7e1bf2628a4"
+    },
+    {
+      "name": "mutter-aurora",
+      "filename": "mutter-aurora-51.1.aurora4-1-aarch64.pkg.tar.xz",
+      "bytes": 2644732,
+      "sha256": "aaad5669d2a235e1c312660066f6102d0cd19902ba567f59f0231013414316ad"
+    },
+    {
+      "name": "networkmanager-aurora",
+      "filename": "networkmanager-aurora-1.58.1-4-aarch64.pkg.tar.xz",
+      "bytes": 3600308,
+      "sha256": "b54f9548371783d6cfd087174dc2ca6418e951050e5b3b3f9d542fa67faa1e94"
+    },
+    {
+      "name": "omarchy-ane-tools",
+      "filename": "omarchy-ane-tools-0.5.7-2-aarch64.pkg.tar.xz",
+      "bytes": 53728,
+      "sha256": "0abb2454594182128b77afd58255fd548dba780e8e7e65f8625c03e3a47a6663"
+    },
+    {
+      "name": "omdrop-awdl",
+      "filename": "omdrop-awdl-0.10.5-1-any.pkg.tar.xz",
+      "bytes": 151444,
+      "sha256": "72978ad967c0513a67ced3c9981fce21d232e96440e3a78f0cbed2c7611282ba"
+    },
+    {
+      "name": "opencl-rusticl-aurora",
+      "filename": "opencl-rusticl-aurora-1_26.3.0_devel.202611150611.d4ad4a4dce6-1-aarch64.pkg.tar.xz",
+      "bytes": 4208384,
+      "sha256": "5d71d6f7195bf9f4d7b099291545b31d54b5eb33cc2e305a5bb7d11b06b8515e"
+    },
+    {
+      "name": "pipewire",
+      "filename": "pipewire-1_1.6.10-1.6-aarch64.pkg.tar.xz",
+      "bytes": 252964,
+      "sha256": "933cea13c6a10e6994092ad610740a48b370418c96f0c693f1cdd3eb0e03d6d7"
+    },
+    {
+      "name": "pipewire-alsa",
+      "filename": "pipewire-alsa-1_1.6.10-1.6-aarch64.pkg.tar.xz",
+      "bytes": 5504,
+      "sha256": "2050a809fbfd56cbab4e7627581f6a68bcdbfdeb8c53eb17ef2dba5709686341"
+    },
+    {
+      "name": "pipewire-audio",
+      "filename": "pipewire-audio-1_1.6.10-1.6-aarch64.pkg.tar.xz",
+      "bytes": 1105984,
+      "sha256": "5035e27b17aca61ed5a59bcaba8acb0fab9bc4ae26f4bb2d58eae6b7242d4e34"
+    },
+    {
+      "name": "pipewire-docs",
+      "filename": "pipewire-docs-1_1.6.10-1.6-aarch64.pkg.tar.xz",
+      "bytes": 1920060,
+      "sha256": "865e7acb328aade30df9bed411659584e56e38fbbb8feda886770c25b258f06e"
+    },
+    {
+      "name": "pipewire-ffado",
+      "filename": "pipewire-ffado-1_1.6.10-1.6-aarch64.pkg.tar.xz",
+      "bytes": 32872,
+      "sha256": "73061a55ea1db95887cc75bbb7a699cb1c9a7a071573916ba7dc81daa6966702"
+    },
+    {
+      "name": "pipewire-jack",
+      "filename": "pipewire-jack-1_1.6.10-1.6-aarch64.pkg.tar.xz",
+      "bytes": 145836,
+      "sha256": "f628aad92bf0bf8ac935b381067ecc7e7c2e51640c13c84b1f9970c450094faa"
+    },
+    {
+      "name": "pipewire-jack-client",
+      "filename": "pipewire-jack-client-1_1.6.10-1.6-aarch64.pkg.tar.xz",
+      "bytes": 77436,
+      "sha256": "aa5e243fa10e0552735ac64daa3e14231aa56f1fe0b6f56c8bad474da25d7e29"
+    },
+    {
+      "name": "pipewire-libcamera",
+      "filename": "pipewire-libcamera-1_1.6.10-1.6-aarch64.pkg.tar.xz",
+      "bytes": 56672,
+      "sha256": "b8f8ae42cfe55febcef03ba79bcc432cd0d23715e3ed173096edcc178bb524a7"
+    },
+    {
+      "name": "pipewire-netjack2",
+      "filename": "pipewire-netjack2-1_1.6.10-1.6-aarch64.pkg.tar.xz",
+      "bytes": 57176,
+      "sha256": "8018b375cf8e85f04b3440e1f27cd81a5f9262fd6e63719c374fb4a09b22eb96"
+    },
+    {
+      "name": "pipewire-pulse",
+      "filename": "pipewire-pulse-1_1.6.10-1.6-aarch64.pkg.tar.xz",
+      "bytes": 203340,
+      "sha256": "d378a9749c34e26b6fbe082da1729cd143a4ab545de20f80242f982b24da075e"
+    },
+    {
+      "name": "pipewire-roc",
+      "filename": "pipewire-roc-1_1.6.10-1.6-aarch64.pkg.tar.xz",
+      "bytes": 29340,
+      "sha256": "2df5ed357b472a00e21d61cc410f2cd9abebf1487ec1620c05d664ba2bc6c448"
+    },
+    {
+      "name": "pipewire-session-manager",
+      "filename": "pipewire-session-manager-1_1.6.10-1.6-aarch64.pkg.tar.xz",
+      "bytes": 4280,
+      "sha256": "6f67b3181d145405cbccf761eb70db967a312939ef92273b259f4a4fc1c5c08b"
+    },
+    {
+      "name": "pipewire-system-services",
+      "filename": "pipewire-system-services-1_1.6.10-1.6-aarch64.pkg.tar.xz",
+      "bytes": 6528,
+      "sha256": "e45c7edca6782ba52ce13d131c80255f3160746b2b0b167c60a3983bc8c30144"
+    },
+    {
+      "name": "pipewire-v4l2",
+      "filename": "pipewire-v4l2-1_1.6.10-1.6-aarch64.pkg.tar.xz",
+      "bytes": 38140,
+      "sha256": "da4dd5b8b1c9ea21b5fd41cd213d826a23b421d57704785fb1afc56a9d018e26"
+    },
+    {
+      "name": "pipewire-x11-bell",
+      "filename": "pipewire-x11-bell-1_1.6.10-1.6-aarch64.pkg.tar.xz",
+      "bytes": 10552,
+      "sha256": "e92021d98a9d603ec4f6e685504da27b3bbaf1dfe2c7d5254960e65520daaac4"
+    },
+    {
+      "name": "pipewire-zeroconf",
+      "filename": "pipewire-zeroconf-1_1.6.10-1.6-aarch64.pkg.tar.xz",
+      "bytes": 116224,
+      "sha256": "0e16d6a89933bb1f98a7a692470a46a7e3254893a2e7aae2a238116f27fccc6c"
+    },
+    {
+      "name": "plasma-setup",
+      "filename": "plasma-setup-6.8.1-2-aarch64.pkg.tar.xz",
+      "bytes": 331216,
+      "sha256": "9dadb2cca1cbd21d76dfc777b027f1af2c98fd314ed5b01f8a58f9b6df765001"
+    },
+    {
+      "name": "plymouth",
+      "filename": "plymouth-26.134.222-9-aarch64.pkg.tar.xz",
+      "bytes": 1046980,
+      "sha256": "7b404b68e3818d409f18d27218a0ab89e7f63453a16b916bf050be808783cfe8"
+    },
+    {
+      "name": "plymouth-theme-aurora",
+      "filename": "plymouth-theme-aurora-1-4-any.pkg.tar.xz",
+      "bytes": 34796,
+      "sha256": "3986c10d481db90e760c1b8a06d39ee33fb4a2d47a197a7c51f107d925fa3fef"
+    },
+    {
+      "name": "power-profiles-daemon",
+      "filename": "power-profiles-daemon-0.30-1.1-aarch64.pkg.tar.xz",
+      "bytes": 46948,
+      "sha256": "2bf0f07bfdb57c88831ceeb93ef8e490019c9898495671dff8e5642710dfb96d"
+    },
+    {
+      "name": "pulse-native-provider",
+      "filename": "pulse-native-provider-1_1.6.10-1.6-aarch64.pkg.tar.xz",
+      "bytes": 4272,
+      "sha256": "bdfa16e6355968abc59159e91c2d8e490acfbaf4769afe52caaad482ae3d8325"
+    },
+    {
+      "name": "speakerguardd",
+      "filename": "speakerguardd-0.1.12-4-aarch64.pkg.tar.xz",
+      "bytes": 227812,
+      "sha256": "d848e9469e16a325d321d16178e8a67e7fb64a899de1b2754a43a9e3f63536e0"
+    },
+    {
+      "name": "speakerguardd-v2",
+      "filename": "speakerguardd-v2-1.0.0alpha.1-41-aarch64.pkg.tar.xz",
+      "bytes": 1172032,
+      "sha256": "d383fdd0bb940a56ea32a91fe23b7e23a77f2fe776539dfe292d1a7934ccb3d9"
+    },
+    {
+      "name": "speakersafetyd",
+      "filename": "speakersafetyd-2.0.1-1.2-aarch64.pkg.tar.xz",
+      "bytes": 347824,
+      "sha256": "c4ef16eac38a3e5b8e48feef448c67a5ba08bc879ddbf98e6298a0b282e36130"
+    },
+    {
+      "name": "speakersafetyd-aurora-profiles",
+      "filename": "speakersafetyd-aurora-profiles-1-2-any.pkg.tar.xz",
+      "bytes": 5360,
+      "sha256": "685bac8bc0f03283a98408894e9485eba6c170ac9a38bbdcbc9e3047a04b6c59"
+    },
+    {
+      "name": "steam",
+      "filename": "steam-1_0.r202610301134.c06f610e360-1-any.pkg.tar.xz",
+      "bytes": 3948,
+      "sha256": "673d016ae2e4900b88484686566e1e5c2bfad39aefd6925e9359db12a8a9dc95"
+    },
+    {
+      "name": "triforce-lv2",
+      "filename": "triforce-lv2-0.3.2-1-aarch64.pkg.tar.xz",
+      "bytes": 310124,
+      "sha256": "48d6a25d88cd7cc8ae48a60fdfec5ecefcf904489af518a1d024822e0a1ef614"
+    },
+    {
+      "name": "uboot-aurora",
+      "filename": "uboot-aurora-2026.07.aurora11-1-aarch64.pkg.tar.xz",
+      "bytes": 291488,
+      "sha256": "86c10a5635871f2dbed9ca7f293e404b571b9f337ae273e40b901c3ae59c9ece"
+    },
+    {
+      "name": "udisks2",
+      "filename": "udisks2-2.11.2-1-aarch64.pkg.tar.xz",
+      "bytes": 717524,
+      "sha256": "8079d1f3768b09a01e965d72f8cc12aa8ea9a2500a4134ee88bb68505df9e346"
+    },
+    {
+      "name": "udisks2-btrfs",
+      "filename": "udisks2-btrfs-2.11.2-1-aarch64.pkg.tar.xz",
+      "bytes": 168812,
+      "sha256": "2d86a31dc0874742cbc38ccab483d4bb0ccc1fad0f62c883e8a1212fb20b440a"
+    },
+    {
+      "name": "udisks2-docs",
+      "filename": "udisks2-docs-2.11.2-1-aarch64.pkg.tar.xz",
+      "bytes": 307196,
+      "sha256": "5b94b4e73b42d03a103077f5856bccebdf282f30685df25ef2b2e3f012243947"
+    },
+    {
+      "name": "udisks2-lvm2",
+      "filename": "udisks2-lvm2-2.11.2-1-aarch64.pkg.tar.xz",
+      "bytes": 185124,
+      "sha256": "e6a719a79b324a4eaa6a4ee3b98d2662469e4d660c9f38f97143c9e81d36aefd"
+    },
+    {
+      "name": "upower-aurora",
+      "filename": "upower-aurora-1.91.5.aurora1-3-aarch64.pkg.tar.xz",
+      "bytes": 126284,
+      "sha256": "3a4d995c815bc1d50a27bc65bfc29d8eaea82a102817bdc019d197adcf2cbe23"
+    },
+    {
+      "name": "vulkan-aurora",
+      "filename": "vulkan-aurora-1_26.3.0_devel.202611150611.d4ad4a4dce6-1-aarch64.pkg.tar.xz",
+      "bytes": 3755768,
+      "sha256": "11e441595c1f39486d56b01b350cfbe56e5be8aa660014b8759785a10cc519f2"
+    },
+    {
+      "name": "vulkan-lavapipe-aurora",
+      "filename": "vulkan-lavapipe-aurora-1_26.3.0_devel.202611150611.d4ad4a4dce6-1-aarch64.pkg.tar.xz",
+      "bytes": 1900064,
+      "sha256": "ecd20f43f0e04c30dbc1ac6b1a405105ca79b12951f79ee2ee640c101392803e"
+    }
+  ]
+}

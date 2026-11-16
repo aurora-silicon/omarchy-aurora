@@ -1,0 +1,123 @@
+name: Omarchy Aurora packages
+on:
+  push:
+    branches: [main]
+    paths: [packages/**, overlay/**, scripts/**, tests/**, sources.lock.json, sources/**, .github/workflows/packages.yml]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: omarchy-packages-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - run: bash scripts/test
+  build:
+    needs: checks
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - name: Fetch immutable source inputs
+        run: python3 scripts/fetch-inputs.py
+      - name: Build in an isolated signed ALARM root
+        run: |
+          set -euo pipefail
+          df -B1 "$PWD"
+          docker run --rm --privileged --ipc=host -v /dev:/dev -v "$PWD:/src" -w /src \
+            registry.fedoraproject.org/fedora:44 bash -euo pipefail -c '
+              dnf install -y python3 gnupg2 tar gzip util-linux coreutils bsdtar
+              bash scripts/build-packages
+            ' 2>&1 | tee packages-build.log
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8
+        with:
+          subject-path: out/packages/*.pkg.tar.*
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: omarchy-packages
+          path: |
+            out/packages/
+            packages-build.log
+          compression-level: 0
+          retention-days: 14
+  sign:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-24.04
+    environment: testing-signing
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: omarchy-packages
+          path: candidate
+      - name: Prepare the isolated signer before loading credentials
+        run: |
+          docker build -t omarchy-signer - <<'EOF'
+          FROM registry.fedoraproject.org/fedora:44
+          RUN dnf install -y pacman bsdtar gnupg2 python3 && dnf clean all
+          EOF
+      - name: Sign and verify the desktop repository
+        env:
+          ALARM_SIGNING_KEY: ${{ secrets.ALARM_SIGNING_KEY }}
+          ALARM_SIGNING_PASSPHRASE: ${{ secrets.ALARM_SIGNING_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          jq -n '{key:env.ALARM_SIGNING_KEY,passphrase:env.ALARM_SIGNING_PASSPHRASE}' |
+            docker run --rm -i --network none -v "$PWD:/src" -w /src omarchy-signer \
+              python3 scripts/sign-repository.py --credentials-stdin --packages candidate/out/packages --output repository
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: signed-omarchy-repository
+          path: repository/
+          compression-level: 0
+          retention-days: 30
+  publish:
+    needs: sign
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: signed-omarchy-repository
+          path: repository
+      - name: Publish the immutable package snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="testing-$(date -u +%Y%m%d).${GITHUB_RUN_NUMBER}"
+          gh release create "$tag" repository/* --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --prerelease --title "Omarchy Aurora $tag" --notes 'Signed Omarchy desktop packages; hardware is provided by Aurora ALARM.'
+          mkdir -p site/testing/aarch64
+          cp repository/* site/testing/aarch64/
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
+        with:
+          path: site
+  deploy:
+    needs: publish
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@d6db90192fee0fa35b2e8b31d7f0a8f8031430b4
+        id: deployment

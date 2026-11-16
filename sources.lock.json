@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "profile": "omarchy-hyprland",
+  "version": "4.5.0",
+  "alarm": {
+    "repository": "aurora-silicon/alarm-aurora",
+    "commit": "27109d226aa5ec80734f30e5d9e754e433e08f40",
+    "snapshot": "testing-20261115.2",
+    "manifest_sha256": "01793f2edf33a0ad203c72f1b61a4a476aee163efe795ae6843b12a70698e49a"
+  },
+  "omarchy": {
+    "repository": "omacom/omarchy",
+    "commit": "a948d8a6871f446b335258c827648ac5f4e9428b",
+    "tag": "v4.5.0",
+    "version": "4.5.0",
+    "package_repository": "https://pkgs.omarchy.org/edge/aarch64",
+    "package_database_sha256": "7f9a57c90b88e16c45594e8fb8f46d92dc68fb62b3a6ce35cebd8bc6eefac49e",
+    "signing_fingerprint": "40DFB630FF42BCFFB047046CF0134EE680CAC571"
+  },
+  "omarchy_mac": {
+    "repository": "aurora-silicon/omarchy-mac-pkgs",
+    "commit": "76d8b7222e5c10d7b7a89803771f363c3c181b2c",
+    "version": "0.2.6"
+  },
+  "recipes": {
+    "repository": "omacom/omarchy-pkgs",
+    "commit": "b4c914c215561b38031f83133e62a203aef12a3d"
+  }
+}

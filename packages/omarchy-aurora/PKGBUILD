@@ -1,0 +1,16 @@
+pkgname=omarchy-aurora
+pkgver=4.5.0
+pkgrel=1
+pkgdesc='Omarchy desktop integration for the shared Aurora ALARM image'
+arch=('aarch64')
+license=('MIT')
+url='https://github.com/aurora-silicon/omarchy-aurora'
+depends=('omarchy' 'omarchy-mac' 'aurora-boot' 'aurora-firstboot' 'linux-aurora'
+         'aura' 'uboot-aurora' 'grub' 'sddm' 'snapper' 'python' 'sudo')
+source=()
+sha256sums=()
+package() {
+  cp -a "${OMARCHY_AURORA_SOURCE:?}/overlay/." "$pkgdir/"
+  install -Dm644 "$OMARCHY_AURORA_SOURCE/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 "$OMARCHY_AURORA_SOURCE/sources.lock.json" "$pkgdir/usr/share/omarchy-aurora/sources.lock.json"
+}

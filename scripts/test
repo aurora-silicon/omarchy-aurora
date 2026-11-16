@@ -1,0 +1,20 @@
+#!/bin/bash
+set -euo pipefail
+cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.."
+temporary=$(mktemp -d)
+trap 'rm -rf -- "$temporary"' EXIT
+export PYTHONPYCACHEPREFIX="$temporary/pycache"
+python3 -m unittest discover -s tests -p 'test_*.py'
+python3 - <<'PY'
+from pathlib import Path
+import py_compile,subprocess
+for directory in ('scripts','tests','overlay','packages'):
+    for path in Path(directory).rglob('*'):
+        if not path.is_file() or '__pycache__' in path.parts:
+            continue
+        if path.suffix=='.py':
+            py_compile.compile(str(path),doraise=True)
+        if path.name=='PKGBUILD' or path.read_bytes()[:11]==b'#!/bin/bash':
+            subprocess.run(['bash','-n',str(path)],check=True)
+print('Python compilation and shell syntax passed')
+PY

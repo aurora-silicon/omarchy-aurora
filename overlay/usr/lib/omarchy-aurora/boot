@@ -1,0 +1,28 @@
+#!/bin/bash
+set -euo pipefail
+operation=${1:?boot operation required}
+shift
+[[ $(id -u) == 0 ]] || { echo 'Aurora boot operations require root' >&2; exit 1; }
+case $operation in
+  setup-boot|update-takeover)
+    if [[ -e /var/lib/omarchy-aurora/building ]]; then exit 0; fi
+    [[ -r /etc/aurora/image-layout && -d /boot/efi/m1n1 ]]
+    mkinitcpio -P
+    grub-mkconfig -o /boot/grub/grub.cfg
+    LC_ALL=C update-m1n1 /boot/efi/m1n1/boot.bin
+    ;;
+  update-verify)
+    if [[ -e /var/lib/omarchy-aurora/building ]]; then exit 0; fi
+    [[ -s /boot/grub/grub.cfg && -s /boot/efi/EFI/BOOT/BOOTAA64.EFI && -s /boot/efi/m1n1/boot.bin ]]
+    grep -Fq 'rootflags=subvol=root' /boot/grub/grub.cfg
+    ;;
+  provision-prepare|provision-commit|provision-verify|luks-slots)
+    echo 'Aurora first-boot setup owns disk encryption and the initial owner. Use the normal Aurora setup flow.' >&2
+    exit 2
+    ;;
+  reset-prepare|reset-verify|reset-commit|reset-rollback)
+    echo 'Use Reset in Aurora Installer from macOS for this Aurora installation.' >&2
+    exit 2
+    ;;
+  *) echo "Unsupported Aurora lifecycle operation: $operation" >&2; exit 2;;
+esac

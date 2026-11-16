@@ -1,0 +1,14 @@
+[Unit]
+Description=Finish Omarchy Aurora platform setup
+After=aurora-firstboot.service NetworkManager.service
+Before=display-manager.service
+ConditionPathExists=/var/lib/aurora/firstboot/complete
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/omarchy-aurora/first-hardware
+RemainAfterExit=yes
+TimeoutStartSec=180
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,44 @@
+#!/bin/bash
+set -euo pipefail
+root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
+[[ $(id -u) == 0 && $(uname -m) == aarch64 ]]
+cd "$root"
+python3 inputs/alarm/scripts/fetch-base.py
+python3 scripts/prepare-runtime.py inputs/runtime
+stage=$(mktemp -d /var/tmp/omarchy-package-root.XXXXXX)
+cleanup() {
+  local status=$?
+  for path in run sys proc dev; do
+    if mountpoint -q "$stage/$path"; then umount -R "$stage/$path" || status=1; fi
+  done
+  if ! mountpoint -q "$stage/dev"; then rm -rf -- "$stage"; fi
+  exit "$status"
+}
+trap cleanup EXIT
+bsdtar --exclude='dev/*' -xpf inputs/alarm/cache/base/ArchLinuxARM-aarch64.tar.gz -C "$stage"
+mkdir -p "$stage"/{dev,proc,sys,run,build,output}
+mount --rbind /dev "$stage/dev"
+mount -t proc proc "$stage/proc"
+mount --rbind /sys "$stage/sys"
+mount -t tmpfs tmpfs "$stage/run"
+cp -L /etc/resolv.conf "$stage/etc/resolv.conf"
+chroot "$stage" pacman-key --init
+chroot "$stage" pacman-key --populate archlinuxarm
+chroot "$stage" pacman -Syu --noconfirm --needed base-devel git imagemagick python systemd jq
+chroot "$stage" useradd -m builder
+cp -a inputs/runtime "$stage/build/runtime"
+cp -a inputs/mac "$stage/build/mac"
+mkdir "$stage/build/aurora"
+cp -a overlay packages sources.lock.json LICENSE "$stage/build/aurora/"
+builder_uid=$(chroot "$stage" id -u builder)
+builder_gid=$(chroot "$stage" id -g builder)
+chown -R "$builder_uid:$builder_gid" "$stage/build" "$stage/output"
+chroot "$stage" runuser -u builder -- bash -c 'cd /build/mac; omarchy-mac/test/all'
+mkdir -p out/packages
+for name in omarchy-settings omarchy omarchy-mac omarchy-aurora; do
+  chroot "$stage" runuser -u builder -- env \
+    OMARCHY_SRC=/build/runtime OMARCHY_MAC_SOURCE=/build/mac OMARCHY_AURORA_SOURCE=/build/aurora \
+    bash -c 'cd "/build/aurora/packages/$1"; PKGDEST=/output makepkg --nodeps --noconfirm' build "$name"
+done
+cp "$stage"/output/*.pkg.tar.* out/packages/
+python3 scripts/check-packages.py out/packages

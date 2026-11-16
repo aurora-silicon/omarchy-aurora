@@ -1,0 +1,13 @@
+[Unit]
+Description=Prepare Omarchy homes for Aurora owners
+After=aurora-firstboot.service omarchy-aurora-hardware.service
+Before=display-manager.service
+ConditionPathExists=/var/lib/aurora/firstboot/complete
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/omarchy-aurora/finalize-owners
+TimeoutStartSec=180
+
+[Install]
+WantedBy=multi-user.target

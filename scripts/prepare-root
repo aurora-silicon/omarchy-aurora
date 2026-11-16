@@ -1,0 +1,57 @@
+#!/bin/bash
+set -euo pipefail
+root=${1:?disposable mounted image root required}
+[[ $(id -u) == 0 && $root == /* && $root != / && -d $root/etc/pacman.d ]]
+[[ -f /src/sources.lock.json && -d /src/out/repository ]]
+mkdir -p "$root/var/lib/omarchy/image" "$root/var/lib/omarchy-aurora" "$root/tmp/omarchy-repository"
+printf 'format=1\nplatform=aarch64-apple\n' > "$root/var/lib/omarchy/image/target"
+chmod 0644 "$root/var/lib/omarchy/image/target"
+chmod 0755 "$root/var/lib/omarchy/image"
+touch "$root/var/lib/omarchy-aurora/building"
+chroot "$root" pacman -Q > /src/out/base-package-versions.txt
+cp /src/keys/omarchy.asc "$root/tmp/omarchy-key.asc"
+chroot "$root" pacman-key --add /tmp/omarchy-key.asc
+chroot "$root" pacman-key --lsign-key 40DFB630FF42BCFFB047046CF0134EE680CAC571
+cp /src/out/repository/* "$root/tmp/omarchy-repository/"
+python3 - "$root" <<'PY'
+from pathlib import Path
+import sys
+root=Path(sys.argv[1]);p=root/'etc/pacman.conf';s=p.read_text();at=s.index('[asahi-alarm]')
+s=s[:at]+'''[omarchy-aurora]
+SigLevel = Required DatabaseRequired
+Server = file:///tmp/omarchy-repository
+
+[omarchy]
+SigLevel = Required DatabaseOptional
+Server = https://pkgs.omarchy.org/edge/aarch64
+
+'''+s[at:];p.write_text(s)
+(root/'var/lib/pacman/sync/omarchy.db').write_bytes(Path('/src/sources/omarchy.db').read_bytes())
+PY
+cp /src/out/repository/omarchy-aurora.db "$root/var/lib/pacman/sync/omarchy-aurora.db"
+chroot "$root" pacman -S --noconfirm omarchy-aurora/omarchy-settings
+# Refresh reuses the committed database, not the rolling upstream one.
+cp /src/sources/omarchy.db "$root/var/lib/pacman/sync/omarchy.db"
+chroot "$root" pacman -S --noconfirm --needed omarchy-aurora/omarchy omarchy-aurora/omarchy-mac omarchy-aurora/omarchy-aurora
+chroot "$root" bash -c 'OMARCHY_PATH=/usr/share/omarchy omarchy-pkg-defaults aarch64-apple' > /src/out/omarchy-defaults.txt
+python3 /src/scripts/select-desktop-packages.py "$root" /src/out/omarchy-defaults.txt /src/out/desktop-package-plan.json
+mapfile -t desktop_packages < <(python3 -c 'import json; print("\n".join(json.load(open("/src/out/desktop-package-plan.json"))["install"]))')
+chroot "$root" pacman -S --noconfirm --needed "${desktop_packages[@]}" snapper foot qemu-guest-agent
+# Pin build-time setup to the same immutable package sources.
+python3 - "$root" <<'PYTEMPLATES'
+import json
+from pathlib import Path
+import sys
+root=Path(sys.argv[1]);lock=json.loads(Path('/src/sources.lock.json').read_text())
+p=root/'usr/share/omarchy-aurora/pacman/pacman-edge.conf'
+s=p.read_text().replace('https://aurorasilicon.org/alarm-aurora/testing/aarch64',
+    'https://github.com/aurora-silicon/alarm-aurora/releases/download/'+lock['alarm']['snapshot'])
+s=s.replace('https://aurorasilicon.org/omarchy-aurora/testing/aarch64','file:///tmp/omarchy-repository')
+p.write_text(s)
+PYTEMPLATES
+# Runtime setup reads the Aurora-owned templates and the Aurora boot provider.
+chroot "$root" env OMARCHY_PATH=/usr/share/omarchy omarchy-apply-system --defer-provisioning --first-install
+python3 /src/scripts/check-hardware-versions.py /src/out/base-package-versions.txt "$root"
+
+cp /src/overlay/usr/share/omarchy-aurora/pacman/pacman-edge.conf "$root/usr/share/omarchy-aurora/pacman/pacman-edge.conf"
+cp "$root/usr/share/omarchy-aurora/pacman/pacman-edge.conf" "$root/etc/pacman.conf"

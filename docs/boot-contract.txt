@@ -1,0 +1,6 @@
+Omarchy Aurora preserves the ALARM alarm-btrfs-v1 contract:
+ESP, ext4 Boot, Btrfs Root with root/home subvolumes.
+aurora-root owns in-place encryption and per-device firmware admission.
+aurora-firstboot owns the first account and owner-key replacement.
+Aurora's GRUB and update-m1n1 deploy the shared kernel and Stage 2.
+The desktop never installs omarchy-mac-boot's competing firstboot/Limine units.

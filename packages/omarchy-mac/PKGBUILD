@@ -1,0 +1,21 @@
+pkgname=omarchy-mac
+pkgver=0.2.6
+pkgrel=1.aurora1
+pkgdesc='Current Omarchy Mac support on the Aurora hardware stack'
+arch=('aarch64')
+license=('MIT')
+url='https://github.com/aurora-silicon/omarchy-mac-pkgs'
+provides=('omarchy-platform')
+conflicts=('omarchy-platform')
+depends=('omarchy' 'bash' 'coreutils' 'diffutils' 'grep' 'sed' 'gawk' 'systemd'
+         'pciutils' 'kmod' 'mkinitcpio' 'networkmanager' 'iwd' 'python' 'pipewire'
+         'pipewire-pulse' 'libpulse' 'wireplumber' 'aurora-audio' 'speakerguardd'
+         'alsa-ucm-conf-aurora' 'rtkit' 'pipewire-alsa' 'vulkan-aurora' 'asahi-alarm-keyring')
+source=()
+sha256sums=()
+package() {
+  [[ -d ${OMARCHY_MAC_SOURCE:?}/omarchy-mac ]]
+  [[ $(<"$OMARCHY_MAC_SOURCE/omarchy-mac/version") == "$pkgver" ]]
+  bash "$OMARCHY_MAC_SOURCE/omarchy-mac/install" "$pkgdir"
+  printf '%s\n' '76d8b7222e5c10d7b7a89803771f363c3c181b2c' > "$pkgdir/usr/share/omarchy-mac/source-revision"
+}

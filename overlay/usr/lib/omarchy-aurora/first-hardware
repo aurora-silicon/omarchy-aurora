@@ -1,0 +1,5 @@
+#!/bin/bash
+set -euo pipefail
+# A virtual test guest cannot exercise Apple peripherals.
+if ! omarchy-hw-apple-silicon; then exit 0; fi
+exec /usr/bin/omarchy-provision-hardware

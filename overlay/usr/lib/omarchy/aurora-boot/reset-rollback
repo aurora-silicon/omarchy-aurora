@@ -1,0 +1,3 @@
+#!/bin/bash -p
+set -euo pipefail
+exec /usr/bin/env -i PATH=/usr/local/sbin:/usr/local/bin:/usr/bin /usr/lib/omarchy-aurora/boot reset-rollback "$@"
