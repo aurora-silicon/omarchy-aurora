@@ -66,6 +66,10 @@ jobs:
           compression-level: 0
           path: |
             image-build.log
+            out/base-package-versions.txt
+            out/desktop-package-plan.json
+            out/omarchy-defaults.txt
+            out/omarchy-setup.log
             out/omarchy-hyprland-filesystems.tar.zst*
             out/omarchy-hyprland-installer/image.json
             out/omarchy-hyprland-installer/omarchy-provenance.json

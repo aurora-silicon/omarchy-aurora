@@ -8,6 +8,14 @@ root=$(realpath -- "$root")
 # as on a booted system; the disposable builder mounts a fresh tmpfs there.
 chmod 0755 "$root/run"
 install -d -m 0755 "$root/run/lock"
+capture_setup_log() {
+  local status=$?
+  if [[ -f $root/var/log/omarchy-install.log ]]; then
+    tail -c 1048576 "$root/var/log/omarchy-install.log" > /src/out/omarchy-setup.log || true
+  fi
+  exit "$status"
+}
+trap capture_setup_log EXIT
 mkdir -p "$root/var/lib/omarchy/image" "$root/var/lib/omarchy-aurora" "$root/tmp/omarchy-repository"
 printf 'format=1\nplatform=aarch64-apple\n' > "$root/var/lib/omarchy/image/target"
 chmod 0644 "$root/var/lib/omarchy/image/target"
