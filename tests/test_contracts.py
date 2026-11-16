@@ -47,6 +47,18 @@ class Contracts(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'hardware package set changed'):
                 check({'mesa': '30'}, after, {'mesa'})
 
+    def test_signed_alarm_providers_keep_generic_hardware_requests_on_aurora(self):
+        data = json.loads((ROOT / 'sources/alarm-providers.json').read_text())
+        lock = json.loads((ROOT / 'sources.lock.json').read_text())
+        self.assertEqual(data['database_sha256'], lock['alarm']['package_database_sha256'])
+        hardware = {p['name'] for p in json.loads((ROOT / 'sources/alarm-manifest.json').read_text())['packages']}
+        selected, excluded = module('select-desktop-packages').targets(
+            ['alsa-utils', 'alsa-ucm-conf-asahi', 'libfprint', 'networkmanager'],
+            hardware, data['providers'])
+        self.assertEqual(selected, ['aurora/alsa-utils-aurora', 'aurora/alsa-ucm-conf-aurora',
+                                    'aurora/libfprint-aurora', 'aurora/networkmanager-aurora'])
+        self.assertEqual(excluded, [])
+
     def test_hardware_must_match_the_exact_signed_snapshot_even_without_a_desktop_change(self):
         check = module('check-hardware-versions').check
         check({'mesa': '30'}, {'mesa': '30'}, {'mesa'}, {'mesa': '30'})

@@ -18,4 +18,4 @@ To rebuild a pinned release, run `gh workflow run packages.yml --repo aurora-sil
 
 For an image-only change, run `gh workflow run images.yml --repo aurora-silicon/omarchy-aurora --ref main -f overlay-snapshot=testing-YYYYMMDD.N` with a signed snapshot matching the source lock. A successful image run can also be published explicitly with `publish-payload.yml -f image-run=RUN_ID`; the shared workflow authenticates its artifacts and VM results again.
 
-When updating the ALARM base, keep `sources.json`, the locked snapshot manifest and its signed-database package versions aligned. Runtime or Mac package updates also update the matching recipe versions. No local kernel or desktop compilation is required to install an image.
+When updating the ALARM base, keep `sources.json`, the locked snapshot manifest, package versions and provider map aligned with the signed database. Runtime or Mac package updates also update the matching recipe versions. No local kernel or desktop compilation is required to install an image.
