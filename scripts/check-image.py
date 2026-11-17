@@ -30,6 +30,14 @@ def check(root):
     for name in ['omarchy-aurora-keyring.service', 'omarchy-aurora-hardware.service', 'omarchy-aurora-owners.service']:
         if not (root / 'etc/systemd/system/multi-user.target.wants' / name).is_symlink():
             raise ValueError('first-boot desktop integration not enabled: ' + name)
+    for name in ['etc/systemd/system/multi-user.target.wants/omarchy-provision-hardware.service',
+                 'var/lib/omarchy/image/pacman-keyring']:
+        path = root / name
+        if path.exists() or path.is_symlink():
+            raise ValueError('competing first-boot hardware/keyring executor: ' + name)
+    queue = root / 'var/lib/omarchy/image/deferred-steps'
+    if not queue.is_file() or not queue.read_text().strip():
+        raise ValueError('Apple hardware setup queue was not preserved for Aurora first boot')
     lock = json.loads((root / 'usr/share/omarchy-aurora/sources.lock.json').read_text())
     if lock['profile'] != 'omarchy-hyprland':
         raise ValueError('wrong distribution source contract')

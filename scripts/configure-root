@@ -3,6 +3,11 @@ set -euo pipefail
 root=${1:?mounted image root required}
 root=$(realpath -- "$root")
 [[ $(id -u) == 0 && $root == /* && $root != / && -r $root/usr/share/omarchy/version ]]
+# Keep the deferred hardware queue, but let Aurora's ordered wrapper execute
+# it once. The upstream image service would race that wrapper and gate SDDM
+# even on a VM without Apple hardware. Aurora also creates package trust.
+chroot "$root" systemctl disable omarchy-provision-hardware.service
+rm -f "$root/var/lib/omarchy/image/pacman-keyring"
 chroot "$root" systemctl enable sddm.service omarchy-aurora-keyring.service omarchy-aurora-hardware.service omarchy-aurora-owners.service
 chroot "$root" systemctl set-default graphical.target
 # Aurora's wizard precedes the display manager and creates the real owner.
