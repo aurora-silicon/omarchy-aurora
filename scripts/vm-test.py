@@ -257,8 +257,17 @@ def prepare(image, work):
                         if (sessions / n).is_file()), None)
         if session is None:
             raise ValueError('Omarchy has no installed Hyprland login session')
+        # TCG software-rendered startup can exceed UWSM's native 30-second
+        # deadline. Set its documented timeout on the VM-only session entry;
+        # UWSM then generates matching compositor and waitenv unit deadlines.
+        session_text = (sessions / session).read_text()
+        if len(re.findall(r'^Exec=', session_text, re.MULTILINE)) != 1:
+            raise ValueError('VM login session must have exactly one Exec command')
+        write(root, 'usr/share/wayland-sessions/aurora-vm.desktop',
+              re.sub(r'^Exec=', 'Exec=env UWSM_WAIT_VARNAMES_TIMEOUT=300 ',
+                     session_text, count=1, flags=re.MULTILINE))
         write(root, 'etc/sddm.conf.d/99-vm-autologin.conf',
-              '[Autologin]\nUser=auroravm\nSession=' + session + '\nRelogin=false\n')
+              '[Autologin]\nUser=auroravm\nSession=aurora-vm.desktop\nRelogin=false\n')
         write(root, 'boot/efi/omarchy/install.conf', 'format=1\nencrypt=1\n')
         shutil.copyfile(ROOT / 'scripts/vm-desktop-ready.py', root / 'usr/lib/aurora-vm-desktop-ready')
         resolver.unlink(missing_ok=True)
@@ -291,6 +300,7 @@ def validate(image, work, report_path):
     before = digest(image)
     overlay, rows, layout, version = prepare(image, work)
     result = {'schema': 1, 'generic_vm_kernel': version, 'kernel_override': True,
+              'vm_session_startup_timeout_seconds': 300,
               'physical_qualification': 'not tested', 'source_sha256': before}
     report_path.write_text(json.dumps(result, indent=2) + '\n')
     kvm = os.access('/dev/kvm', os.R_OK | os.W_OK)
