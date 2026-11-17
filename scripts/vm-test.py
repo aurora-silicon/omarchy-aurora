@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import re
 import secrets
+import shlex
 import shutil
 import socket
 import struct
@@ -39,6 +40,39 @@ def completion_pattern(nonce):
 
 def unlock_prompt_pattern():
     return re.compile(r'(?i)(?:Unlock Aurora root:|(?:passphrase|password)[^\r\n]*:)')
+
+
+def compositor_exec(command):
+    # Current Hyprland's Lua provider wraps dispatch arguments in hl.dispatch().
+    expression = 'hl.dsp.exec_cmd(' + json.dumps(command) + ')'
+    return shlex.join(['command', 'hyprctl', '-i', '0', 'dispatch', expression])
+
+
+def frame_has_content(data):
+    kind, dimensions, maximum, pixels = data.split(b'\n', 3)
+    width, height = map(int, dimensions.split())
+    if (kind != b'P6' or maximum != b'255' or width <= 0 or height <= 0
+            or width * height > 16_777_216):
+        raise ValueError('unexpected QEMU screenshot format')
+    if len(pixels) != width * height * 3:
+        raise ValueError('truncated QEMU screenshot')
+    first = pixels[:3]
+    return any(pixels[offset:offset + 3] != first for offset in range(3, len(pixels), 3))
+
+
+def desktop_screenshot(qmp_path, work):
+    deadline = time.monotonic() + 180
+    ppm = work / 'desktop.ppm'
+    while True:
+        qmp(qmp_path, 'screendump', {'filename': str(ppm)})
+        if ppm.stat().st_size > 50_331_700:
+            raise ValueError('QEMU screenshot exceeds its bounded frame size')
+        if frame_has_content(ppm.read_bytes()):
+            subprocess.run(['convert', str(ppm), str(work / 'desktop.png')], check=True, timeout=20)
+            return
+        if time.monotonic() >= deadline:
+            raise RuntimeError('The terminal mapped, but the VM display remained a blank frame')
+        time.sleep(2)
 
 
 def partitions(image):
@@ -293,7 +327,6 @@ def validate(image, work, report_path):
         return process
 
     def guest(code, sudo=False, timeout=120):
-        import shlex
         print('VM guest: ' + code.splitlines()[0][:160], flush=True)
         nonce = secrets.token_hex(10)
         command_text = code
@@ -385,11 +418,10 @@ def validate(image, work, report_path):
         result['desktop'] = True
         guest('for n in $(seq 1 60); do (pgrep -u $(id -u) -x quickshell || pgrep -u $(id -u) -x qs) && break; sleep 2; done; pgrep -u $(id -u) -x quickshell || pgrep -u $(id -u) -x qs', timeout=180)
         result['shell'] = True
-        guest("command hyprctl -i 0 dispatch exec 'foot --app-id=aurora-ci-terminal sh -c \"echo Omarchy Aurora; sleep 90\"'")
+        guest(compositor_exec('uwsm-app -- foot --app-id=aurora-ci-terminal sh -c "echo Omarchy Aurora; sleep 300"'))
         guest("for n in $(seq 1 30); do command hyprctl -i 0 -j clients | grep -q aurora-ci-terminal && break; sleep 1; done; command hyprctl -i 0 -j clients | grep -q aurora-ci-terminal", timeout=60)
+        desktop_screenshot(qmp_path, work)
         result['terminal'] = True
-        qmp(qmp_path, 'screendump', {'filename': str(work / 'desktop.ppm')})
-        run('convert', work / 'desktop.ppm', work / 'desktop.png')
         result['original_unchanged'] = digest(image) == before
         if not result['original_unchanged']:
             raise RuntimeError('VM mutated the release image')

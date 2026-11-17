@@ -13,6 +13,16 @@ spec.loader.exec_module(vm)
 
 
 class VMContract(unittest.TestCase):
+    def test_blank_or_flat_frames_do_not_prove_a_rendered_desktop(self):
+        header = b'P6\n2 1\n255\n'
+        for pixel in (b'\0\0\0', b'\xff\xff\xff', b'\x20\x30\x40'):
+            self.assertFalse(vm.frame_has_content(header + pixel * 2))
+        self.assertTrue(vm.frame_has_content(header + b'\0\0\0\xff\xff\xff'))
+
+    def test_a_truncated_frame_is_not_accepted_as_visual_evidence(self):
+        with self.assertRaisesRegex(ValueError, 'truncated'):
+            vm.frame_has_content(b'P6\n2 1\n255\n\0\0\0')
+
     def test_unlock_prompt_matches_the_real_aurora_prompt_after_reboot(self):
         pattern = vm.unlock_prompt_pattern()
         captured = '\x1b[0;1;39mUnlock Aurora root: (press TAB for no echo) \x1b[0m'
