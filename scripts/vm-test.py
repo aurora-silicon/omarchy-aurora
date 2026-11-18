@@ -45,7 +45,7 @@ def unlock_prompt_pattern():
 def compositor_exec(command):
     # Current Hyprland's Lua provider wraps dispatch arguments in hl.dispatch().
     expression = 'hl.dsp.exec_cmd(' + json.dumps(command) + ')'
-    return shlex.join(['command', 'hyprctl', '-i', '0', 'dispatch', expression])
+    return 'command hyprctl -i "$vm_hyprland" dispatch ' + shlex.quote(expression)
 
 
 def frame_has_content(data):
@@ -420,8 +420,10 @@ def validate(image, work, report_path):
         # sudo session open for the complete graphical target transaction.
         guest('systemctl --no-block start graphical.target', sudo=True, timeout=60)
         guest("for n in $(seq 1 60); do pgrep -u $(id -u) -x Hyprland >/dev/null && break; sleep 2; done; pgrep -u $(id -u) -x Hyprland", timeout=180)
-        guest('python3 /usr/lib/aurora-vm-desktop-ready && '
-              'command hyprctl -i 0 -j monitors | python3 -c \'import json,sys;assert any(m["width"]>0 and m["height"]>0 for m in json.load(sys.stdin))\'',
+        # The probe has already validated a real monitor on this exact instance.
+        # A numeric index can select a different instance from the SDDM greeter.
+        guest('vm_hyprland=$(python3 /usr/lib/aurora-vm-desktop-ready) && '
+              'test -n "$vm_hyprland" && printf "Hyprland instance: %s\\n" "$vm_hyprland"',
               timeout=360)
         guest('systemctl is-active --quiet graphical.target && '
               'systemctl is-active --quiet display-manager.service')
@@ -429,7 +431,10 @@ def validate(image, work, report_path):
         guest('for n in $(seq 1 60); do (pgrep -u $(id -u) -x quickshell || pgrep -u $(id -u) -x qs) && break; sleep 2; done; pgrep -u $(id -u) -x quickshell || pgrep -u $(id -u) -x qs', timeout=180)
         result['shell'] = True
         guest(compositor_exec('uwsm-app -- foot --app-id=aurora-ci-terminal sh -c "echo Omarchy Aurora; sleep 300"'))
-        guest("for n in $(seq 1 30); do command hyprctl -i 0 -j clients | grep -q aurora-ci-terminal && break; sleep 1; done; command hyprctl -i 0 -j clients | grep -q aurora-ci-terminal", timeout=60)
+        terminal_client = ('command hyprctl -i "$vm_hyprland" -j clients | '
+                           'grep -Fq aurora-ci-terminal')
+        guest('for n in $(seq 1 30); do ' + terminal_client
+              + ' && break; sleep 1; done; ' + terminal_client, timeout=60)
         desktop_screenshot(qmp_path, work)
         result['terminal'] = True
         result['original_unchanged'] = digest(image) == before
