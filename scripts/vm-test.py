@@ -270,6 +270,9 @@ def prepare(image, work):
               '[Autologin]\nUser=auroravm\nSession=aurora-vm.desktop\nRelogin=false\n')
         write(root, 'boot/efi/omarchy/install.conf', 'format=1\nencrypt=1\n')
         shutil.copyfile(ROOT / 'scripts/vm-desktop-ready.py', root / 'usr/lib/aurora-vm-desktop-ready')
+        write(root, 'usr/lib/aurora-vm-terminal', '#!/bin/sh\nset -eu\n'
+              'test -t 1\nprintf "Omarchy Aurora\\n"\n'
+              ': > "$XDG_RUNTIME_DIR/aurora-ci-terminal-ready"\nexec sleep 600\n', True)
         resolver.unlink(missing_ok=True)
         if original_resolver[0] == 'link':
             resolver.symlink_to(original_resolver[1])
@@ -430,11 +433,8 @@ def validate(image, work, report_path):
         result['desktop'] = True
         guest('for n in $(seq 1 60); do (pgrep -u $(id -u) -x quickshell || pgrep -u $(id -u) -x qs) && break; sleep 2; done; pgrep -u $(id -u) -x quickshell || pgrep -u $(id -u) -x qs', timeout=180)
         result['shell'] = True
-        guest(compositor_exec('uwsm-app -- foot --app-id=aurora-ci-terminal sh -c "echo Omarchy Aurora; sleep 300"'))
-        terminal_client = ('command hyprctl -i "$vm_hyprland" -j clients | '
-                           'grep -Fq aurora-ci-terminal')
-        guest('for n in $(seq 1 30); do ' + terminal_client
-              + ' && break; sleep 1; done; ' + terminal_client, timeout=60)
+        guest(compositor_exec('uwsm-app -- foot --app-id=aurora-ci-terminal /usr/lib/aurora-vm-terminal'))
+        guest('python3 /usr/lib/aurora-vm-desktop-ready --terminal "$vm_hyprland"', timeout=360)
         desktop_screenshot(qmp_path, work)
         result['terminal'] = True
         result['original_unchanged'] = digest(image) == before

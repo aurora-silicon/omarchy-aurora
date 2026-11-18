@@ -31,6 +31,23 @@ class DesktopReadyTests(unittest.TestCase):
             raise subprocess.CalledProcessError(1, arguments)
         self.assertIsNone(desktop.ready_session(unavailable))
 
+    def test_terminal_must_be_visible_on_the_selected_instance(self):
+        terminal = {'class': 'aurora-ci-terminal', 'mapped': True, 'hidden': False}
+        for response, expected in [
+            ('instance unavailable', False),
+            ('[]', False),
+            (json.dumps([dict(terminal, mapped=False)]), False),
+            (json.dumps([dict(terminal, hidden=True)]), False),
+            (json.dumps([dict(terminal, **{'class': 'another-terminal'})]), False),
+            (json.dumps([terminal]), True),
+        ]:
+            with self.subTest(response=response):
+                def query(arguments):
+                    self.assertEqual(arguments, ['hyprctl', '-i', 'session_123', '-j', 'clients'])
+                    return response
+
+                self.assertIs(desktop.terminal_mapped('session_123', query), expected)
+
 
 if __name__ == '__main__':
     unittest.main()
