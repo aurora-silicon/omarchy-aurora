@@ -20,6 +20,9 @@ ALIASES = {
 }
 EXCLUDED_BOOT = {'limine', 'limine-mkinitcpio-hook', 'limine-snapper-sync',
                  'omarchy-first-boot', 'omarchy-apple-boot'}
+# ALARM's FFmpeg follows the libplacebo ABI in its Extra repository.
+# Select it in the same transaction as the desktop's multimedia consumers.
+ALARM_DESKTOP = {'ffmpeg'}
 OVERLAY = {'omarchy', 'omarchy-settings', 'omarchy-mac', 'omarchy-aurora'}
 
 
@@ -33,6 +36,8 @@ def targets(names, hardware, providers=None):
         name = ALIASES.get(original, original if original in hardware else providers.get(original, original))
         if name in hardware:
             name = 'aurora/' + name
+        elif name in ALARM_DESKTOP:
+            name = 'extra/' + name
         elif name in OVERLAY:
             name = 'omarchy-aurora/' + name
         if name not in result:
@@ -49,7 +54,8 @@ if __name__ == '__main__':
             or provider_data['snapshot'] != lock['alarm']['snapshot']
             or not set(provider_data['providers'].values()) <= hardware):
         raise ValueError('hardware provider table differs from the pinned signed snapshot')
-    install, excluded = targets(defaults.read_text().splitlines(), hardware, provider_data['providers'])
+    names = defaults.read_text().splitlines() + sorted(ALARM_DESKTOP)
+    install, excluded = targets(names, hardware, provider_data['providers'])
     missing = [name for name in install if subprocess.run(
         ['chroot', str(root), 'pacman', '-Si', name], stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL).returncode]

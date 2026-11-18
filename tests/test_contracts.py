@@ -40,6 +40,12 @@ class Contracts(unittest.TestCase):
                                     'foot', 'neovim', 'dotnet-runtime-bin', 'aurora/power-profiles-daemon'])
         self.assertEqual(excluded, ['limine'])
 
+    def test_ffmpeg_comes_from_the_repository_that_provides_its_libplacebo_abi(self):
+        selected, excluded = module('select-desktop-packages').targets(
+            ['mpv', 'ffmpeg', 'ffmpeg'], set())
+        self.assertEqual(selected, ['mpv', 'extra/ffmpeg'])
+        self.assertEqual(excluded, [])
+
     def test_changed_or_removed_hardware_is_a_hard_failure(self):
         check = module('check-hardware-versions').check
         check({'mesa': '30', 'foot': '1'}, {'mesa': '30', 'foot': '2'}, {'mesa'})
