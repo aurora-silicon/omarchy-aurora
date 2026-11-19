@@ -320,7 +320,9 @@ def validate(image, work, report_path):
     dump = command.copy()
     dump[dump.index('virt,gic-version=3')] += ',dumpdtb=' + str(dtb)
     run(*dump)
-    run('fdtput', '-t', 's', dtb, '/chosen', 'asahi,efi-system-partition', rows[0]['uuid'])
+    # Both names, as a transitional aura publishes them. LEGACY-ASAHI(2027-02-28): drop the asahi, copy.
+    for prop in ('aurora,efi-system-partition', 'asahi,efi-system-partition'):
+        run('fdtput', '-t', 's', dtb, '/chosen', prop, rows[0]['uuid'])
     qmp_path = work / 'qmp.sock'
     command += ['-dtb', str(dtb), '-kernel', str(work / 'Image'), '-initrd', str(work / 'initrd'),
                 '-append', 'root=UUID=' + layout['root_uuid'] +

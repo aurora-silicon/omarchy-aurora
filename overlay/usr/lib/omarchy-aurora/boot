@@ -3,17 +3,23 @@ set -euo pipefail
 operation=${1:?boot operation required}
 shift
 [[ $(id -u) == 0 ]] || { echo 'Aurora boot operations require root' >&2; exit 1; }
+# The Stage 2 this Mac's Stage 1 chainloads: aurora/boot.bin. LEGACY-ASAHI(2027-02-28):
+# an ESP that has only the pre-rename m1n1/boot.bin was set up for a Stage 1 that loads
+# that file (the rule aurora-scripts' aurora_stage2_dir uses).
+stage2_dir=aurora
+if [[ ! -e /boot/efi/aurora/boot.bin && -e /boot/efi/m1n1/boot.bin ]]; then stage2_dir=m1n1; fi
 case $operation in
   setup-boot|update-takeover)
     if [[ -e /var/lib/omarchy-aurora/building ]]; then exit 0; fi
-    [[ -r /etc/aurora/image-layout && -d /boot/efi/m1n1 ]]
+    [[ -r /etc/aurora/image-layout && ( -d /boot/efi/aurora || -d /boot/efi/m1n1 ) ]]
     mkinitcpio -P
     grub-mkconfig -o /boot/grub/grub.cfg
-    LC_ALL=C update-m1n1 /boot/efi/m1n1/boot.bin
+    mkdir -p "/boot/efi/$stage2_dir"
+    LC_ALL=C update-aura "/boot/efi/$stage2_dir/boot.bin"
     ;;
   update-verify)
     if [[ -e /var/lib/omarchy-aurora/building ]]; then exit 0; fi
-    [[ -s /boot/grub/grub.cfg && -s /boot/efi/EFI/BOOT/BOOTAA64.EFI && -s /boot/efi/m1n1/boot.bin ]]
+    [[ -s /boot/grub/grub.cfg && -s /boot/efi/EFI/BOOT/BOOTAA64.EFI && -s /boot/efi/$stage2_dir/boot.bin ]]
     grep -Fq 'rootflags=subvol=root' /boot/grub/grub.cfg
     ;;
   provision-prepare|provision-commit|provision-verify|luks-slots)
