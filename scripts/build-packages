@@ -54,10 +54,15 @@ cp -a overlay packages sources.lock.json LICENSE "$stage/build/aurora/"
 builder_uid=$(chroot "$stage" id -u builder)
 builder_gid=$(chroot "$stage" id -g builder)
 chown -R "$builder_uid:$builder_gid" "$stage/build" "$stage/output"
-for name in omarchy-settings omarchy omarchy-mac omarchy-aurora; do
+for name in omarchy-settings omarchy omarchy-mac omarchy-aurora aquamarine; do
   chroot "$stage" runuser -u builder -- bash -euo pipefail -c \
     'cd "/build/aurora/packages/$1"; makepkg --printsrcinfo >/dev/null' metadata "$name"
 done
+# aquamarine compiles: install its depends and makedepends from ALARM, as Omarchy's
+# builder does from Arch, before makepkg runs without --syncdeps.
+mapfile -t aquamarine_deps < <(chroot "$stage" runuser -u builder -- bash -euo pipefail -c \
+  'cd /build/aurora/packages/aquamarine; makepkg --printsrcinfo' | sed -n 's/^\t\(make\)\?depends = //p')
+chroot "$stage" pacman -S --noconfirm --needed --asdeps "${aquamarine_deps[@]}"
 # Fedora exports container=oci; upstream fixtures use that name for their
 # synthetic iBoot container path. Do not inject the host value into the suite.
 chroot "$stage" runuser -u builder -- env -u container OMARCHY_TEST_RUNTIME=/build/runtime \
@@ -72,7 +77,7 @@ for runtime_test in "${runtime_tests[@]}"; do
 done
 python3 scripts/prepare-runtime.py "$stage/build/runtime"
 mkdir -p out/packages
-for name in omarchy-settings omarchy omarchy-mac omarchy-aurora; do
+for name in omarchy-settings omarchy omarchy-mac omarchy-aurora aquamarine; do
   chroot "$stage" runuser -u builder -- env \
     OMARCHY_SRC=/build/runtime OMARCHY_MAC_SOURCE=/build/mac OMARCHY_AURORA_SOURCE=/build/aurora \
     bash -c 'cd "/build/aurora/packages/$1"; PKGDEST=/output makepkg --nodeps --noconfirm' build "$name"

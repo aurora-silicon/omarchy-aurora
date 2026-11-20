@@ -4,7 +4,7 @@ import argparse
 from pathlib import Path
 import subprocess
 
-EXPECTED = {'omarchy', 'omarchy-settings', 'omarchy-mac', 'omarchy-aurora'}
+EXPECTED = {'omarchy', 'omarchy-settings', 'omarchy-mac', 'omarchy-aurora', 'aquamarine'}
 FORBIDDEN = ('usr/lib/modules/', 'boot/', 'usr/share/aura/', 'usr/lib/aurora/aurora-firstboot')
 
 
@@ -25,7 +25,7 @@ def check(directory):
             raise ValueError('Omarchy initramfs would replace Aurora hooks')
     if names != EXPECTED:
         raise ValueError('incomplete desktop package set')
-    print('Four desktop/platform packages verified; Aurora hardware/boot ownership preserved')
+    print('Five desktop/platform packages verified; Aurora hardware/boot ownership preserved')
 
 
 if __name__ == '__main__':
