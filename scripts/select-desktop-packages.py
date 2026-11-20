@@ -23,7 +23,7 @@ EXCLUDED_BOOT = {'limine', 'limine-mkinitcpio-hook', 'limine-snapper-sync',
 # ALARM's FFmpeg follows the libplacebo ABI in its Extra repository.
 # Select it in the same transaction as the desktop's multimedia consumers.
 ALARM_DESKTOP = {'ffmpeg'}
-OVERLAY = {'omarchy', 'omarchy-settings', 'omarchy-mac', 'omarchy-aurora'}
+OVERLAY = {'omarchy', 'omarchy-settings', 'omarchy-mac', 'omarchy-aurora', 'aquamarine'}
 
 
 def targets(names, hardware, providers=None):
