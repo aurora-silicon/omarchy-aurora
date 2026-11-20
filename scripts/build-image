@@ -15,10 +15,25 @@ mkdir -p out/repository
 python3 scripts/download-overlay.py "$OMARCHY_OVERLAY_SNAPSHOT" out/repository
 python3 scripts/prepare-base.py inputs/alarm
 snapshot=$(python3 -c 'import json;print(json.load(open("sources.lock.json"))["alarm"]["snapshot"])')
-bash inputs/alarm/scripts/build-image arch-minimal "$snapshot" testing
+# Edge: ALARM's [aurora-edge] overlay (OMARCHY_ALARM_EDGE_SNAPSHOT, its
+# edge-sources.json in AURORA_EDGE_SOURCES) ahead of the Testing snapshot.
+channel=testing
+if [[ -n ${OMARCHY_ALARM_EDGE_SNAPSHOT:-} ]]; then
+  [[ -f ${AURORA_EDGE_SOURCES:?} ]]
+  export AURORA_EDGE_SNAPSHOT=$OMARCHY_ALARM_EDGE_SNAPSHOT AURORA_EDGE_SOURCES
+  channel=edge
+fi
+bash inputs/alarm/scripts/build-image arch-minimal "$snapshot" "$channel"
 mv inputs/alarm/out/arch-minimal-filesystems.tar.zst out/omarchy-hyprland-filesystems.tar.zst
 sha256sum out/omarchy-hyprland-filesystems.tar.zst > out/omarchy-hyprland-filesystems.tar.zst.sha256
 mv inputs/alarm/out/arch-minimal-installer out/omarchy-hyprland-installer
+if [[ $channel == edge ]]; then
+  proof=out/omarchy-hyprland-installer/edge-image-proof.json
+  python3 scripts/edge-image.py proof "$proof" "$proof" "$OMARCHY_OVERLAY_SNAPSHOT"
+  # The archive must carry the Omarchy proof the Edge train stages.
+  tar --sparse -C out/omarchy-hyprland-installer -cf - . | zstd -f -T4 -3 -o out/omarchy-hyprland-filesystems.tar.zst
+  sha256sum out/omarchy-hyprland-filesystems.tar.zst > out/omarchy-hyprland-filesystems.tar.zst.sha256
+fi
 python3 scripts/vm-test.py inputs/alarm/out/arch-minimal/aurora.raw --work out/vm --report out/vm-result.json
 python3 - <<'PY'
 import json
