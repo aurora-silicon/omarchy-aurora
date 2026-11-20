@@ -1,0 +1,93 @@
+From 442ba9f379a9022caae81433ecceb878916dc3ef Mon Sep 17 00:00:00 2001
+From: Satya Benson <satya@benson.earth>
+Date: Fri, 20 Nov 2026 17:53:18 -0500
+Subject: [PATCH] session: skip compute-only render nodes when choosing the
+ renderer
+
+A render node whose driver serves the Asahi uAPI and reports
+DRM_ASAHI_FEATURE_COMPUTE_ONLY (bit 41) refuses render commands. The
+Apple G14 GPU on macOS 27.2 firmware is such a device. As the system's
+only renderD node, aquamarine's sole-renderD fallback adopted it, and
+Hyprland's GL renderer aborted on its first render submission.
+
+Skip such a node in the matching loop, in the renderD count and in the
+fallback, so the renderer falls back to the KMS fd as on a system with no
+render node. The GET_PARAMS ioctl is driver-private, so it is issued only
+to drivers named asahi or aurora.
+---
+ src/backend/Session.cpp | 38 ++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 36 insertions(+), 2 deletions(-)
+
+diff --git a/src/backend/Session.cpp b/src/backend/Session.cpp
+index 27abc30..89ebec2 100644
+--- a/src/backend/Session.cpp
++++ b/src/backend/Session.cpp
+@@ -13,6 +13,34 @@ extern "C" {
+ #include <xf86drmMode.h>
+ #include <linux/input.h>
+ #include <unistd.h>
++#include <sys/ioctl.h>
++
++// An Asahi-uAPI render node whose driver reports DRM_ASAHI_FEATURE_COMPUTE_ONLY
++// refuses render commands, so the renderer must not adopt it.
++static bool renderNodeIsComputeOnly(const char* devnode) {
++    int fd = open(devnode, O_RDWR | O_CLOEXEC);
++    if (fd < 0)
++        return false;
++
++    bool computeOnly = false;
++    if (auto* version = drmGetVersion(fd)) {
++        // The GET_PARAMS ioctl number is driver-private: ask only the drivers serving this uAPI.
++        if (version->name && (strcmp(version->name, "asahi") == 0 || strcmp(version->name, "aurora") == 0)) {
++            struct {
++                uint32_t paramGroup = 0, pad = 0;
++                uint64_t pointer = 0, size = 0;
++            } getParams;
++            uint64_t features    = 0;
++            getParams.pointer    = (uint64_t)(uintptr_t)&features;
++            getParams.size       = sizeof(features);
++            computeOnly          = drmIoctl(fd, DRM_IOW(DRM_COMMAND_BASE, decltype(getParams)), &getParams) == 0 && (features & (1ULL << 41));
++        }
++        drmFreeVersion(version);
++    }
++
++    close(fd);
++    return computeOnly;
++}
+ }
+ 
+ using namespace Aquamarine;
+@@ -204,6 +232,12 @@ void Aquamarine::CSessionDevice::resolveMatchingRenderNode(udev_device* cardDevi
+             continue;
+         }
+ 
++        if (renderNodeIsComputeOnly(devnode)) {
++            session->backend->log(AQ_LOG_DEBUG, std::format("drm: Skipping compute-only render node {}", devnode));
++            udev_device_unref(dev);
++            continue;
++        }
++
+         auto* devParent = udev_device_get_parent(dev);
+         if (devParent && parentSyspath && strcmp(udev_device_get_syspath(devParent), parentSyspath) == 0) {
+             renderNodeFd = open(devnode, O_RDWR | O_CLOEXEC);
+@@ -245,7 +279,7 @@ void Aquamarine::CSessionDevice::resolveMatchingRenderNode(udev_device* cardDevi
+                 continue;
+             const auto* devnode = udev_device_get_devnode(dev);
+             const auto* devtype = udev_device_get_devtype(dev);
+-            if (devnode && devtype && strcmp(devtype, "drm_minor") == 0 && strstr(devnode, "renderD"))
++            if (devnode && devtype && strcmp(devtype, "drm_minor") == 0 && strstr(devnode, "renderD") && !renderNodeIsComputeOnly(devnode))
+                 ++renderDCount;
+             udev_device_unref(dev);
+         }
+@@ -259,7 +293,7 @@ void Aquamarine::CSessionDevice::resolveMatchingRenderNode(udev_device* cardDevi
+                     continue;
+                 const auto* fbDevnode = udev_device_get_devnode(fbDev);
+                 const auto* fbDevtype = udev_device_get_devtype(fbDev);
+-                if (!fbDevnode || !fbDevtype || strcmp(fbDevtype, "drm_minor") != 0 || !strstr(fbDevnode, "renderD")) {
++                if (!fbDevnode || !fbDevtype || strcmp(fbDevtype, "drm_minor") != 0 || !strstr(fbDevnode, "renderD") || renderNodeIsComputeOnly(fbDevnode)) {
+                     udev_device_unref(fbDev);
+                     continue;
+                 }
+-- 
+2.54.0 (Apple Git-157)
+
