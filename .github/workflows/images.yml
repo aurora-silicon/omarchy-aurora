@@ -5,6 +5,9 @@ on:
       overlay-snapshot:
         description: Immutable signed Omarchy Aurora package snapshot
         required: true
+      alarm-edge-snapshot:
+        description: For an Edge image, the signed ALARM [aurora-edge] overlay (edge-YYYYMMDD.N)
+        default: ''
   workflow_run:
     workflows: [Omarchy Aurora packages]
     types: [completed]
@@ -40,6 +43,23 @@ jobs:
           fi
           [[ $snapshot =~ ^testing-[0-9]{8}\.[0-9]+$ ]]
           echo "OMARCHY_OVERLAY_SNAPSHOT=$snapshot" >> "$GITHUB_ENV"
+      - name: Authenticate the ALARM Edge overlay
+        if: inputs.alarm-edge-snapshot != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EDGE_SNAPSHOT: ${{ inputs.alarm-edge-snapshot }}
+        run: |
+          set -euo pipefail
+          [[ $EDGE_SNAPSHOT =~ ^edge-[0-9]{8}\.[1-9][0-9]*$ ]]
+          gh release download "$EDGE_SNAPSHOT" --repo aurora-silicon/alarm-aurora --dir out/alarm-edge \
+            --pattern edge-sources.json
+          gh attestation verify out/alarm-edge/edge-sources.json --repo aurora-silicon/alarm-aurora \
+            --signer-workflow aurora-silicon/alarm-aurora/.github/workflows/publish-edge.yml --deny-self-hosted-runners
+          jq -e '.schema == 1 and .channel == "edge"' out/alarm-edge/edge-sources.json
+          {
+            echo "OMARCHY_ALARM_EDGE_SNAPSHOT=$EDGE_SNAPSHOT"
+            echo "AURORA_EDGE_SOURCES=/src/out/alarm-edge/edge-sources.json"
+          } >> "$GITHUB_ENV"
       - name: Fetch immutable source inputs
         run: python3 scripts/fetch-inputs.py
       - name: Build the complete image and run the real VM acceptance gate
@@ -48,7 +68,7 @@ jobs:
           df -B1 "$PWD"
           docker run --rm --privileged --ipc=host -v /dev:/dev -v /lib/modules:/lib/modules:ro \
             -v /run/udev:/run/udev:ro -v "$PWD:/src" -w /src \
-            -e OMARCHY_OVERLAY_SNAPSHOT -e GITHUB_SHA \
+            -e OMARCHY_OVERLAY_SNAPSHOT -e GITHUB_SHA -e OMARCHY_ALARM_EDGE_SNAPSHOT -e AURORA_EDGE_SOURCES \
             registry.fedoraproject.org/fedora:44 bash -euo pipefail -c '
               dnf install -y python3 python3-pexpect gnupg2 tar gzip util-linux coreutils btrfs-progs \
                 e2fsprogs dosfstools zstd systemd-udev bsdtar git kmod device-mapper qemu-system-aarch64 qemu-img dtc ImageMagick
@@ -59,6 +79,10 @@ jobs:
           subject-path: |
             out/omarchy-hyprland-filesystems.tar.zst
             out/vm-result.json
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8
+        if: inputs.alarm-edge-snapshot != ''
+        with:
+          subject-path: out/omarchy-hyprland-installer/edge-image-proof.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
@@ -74,6 +98,7 @@ jobs:
             out/omarchy-hyprland-installer/image.json
             out/omarchy-hyprland-installer/omarchy-provenance.json
             out/omarchy-hyprland-installer/hardware-versions.json
+            out/omarchy-hyprland-installer/edge-image-proof.json
             out/vm-result.json
             out/vm/serial.log
             out/vm/desktop.png

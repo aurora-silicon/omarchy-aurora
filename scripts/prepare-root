@@ -70,9 +70,18 @@ s=p.read_text().replace('https://aurorasilicon.org/alarm-aurora/testing/aarch64'
 s=s.replace('https://aurorasilicon.org/omarchy-aurora/testing/aarch64','file:///tmp/omarchy-repository')
 p.write_text(s)
 PYTEMPLATES
+# On Edge, ALARM's [aurora-edge] overlay (the qualified kernel and Mesa) precedes [aurora].
+if [[ -n ${AURORA_EDGE_SNAPSHOT:-} ]]; then
+  python3 /src/scripts/edge-image.py pacman "$root/usr/share/omarchy-aurora/pacman/pacman-edge.conf" \
+    "https://github.com/aurora-silicon/alarm-aurora/releases/download/$AURORA_EDGE_SNAPSHOT"
+fi
 # Runtime setup reads the Aurora-owned templates and the Aurora boot provider.
 chroot "$root" env OMARCHY_PATH=/usr/share/omarchy omarchy-apply-system --defer-provisioning --first-install
 python3 /src/scripts/check-hardware-versions.py /src/out/base-package-versions.txt "$root"
 
 cp /src/overlay/usr/share/omarchy-aurora/pacman/pacman-edge.conf "$root/usr/share/omarchy-aurora/pacman/pacman-edge.conf"
+if [[ -n ${AURORA_EDGE_SNAPSHOT:-} ]]; then
+  python3 /src/scripts/edge-image.py pacman "$root/usr/share/omarchy-aurora/pacman/pacman-edge.conf" \
+    https://aurorasilicon.org/alarm-aurora/edge/aarch64
+fi
 cp "$root/usr/share/omarchy-aurora/pacman/pacman-edge.conf" "$root/etc/pacman.conf"
